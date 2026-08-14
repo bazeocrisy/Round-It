@@ -1,32 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Round It!</title>
-
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Round It! — See it. Place it. Round it.</title>
+  <meta name="description" content="Round It! is a visual rounding practice app for grades 3–4. Round whole numbers to the nearest ten, hundred, or thousand with a dynamic number line.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
 </head>
-
 <body>
 
-    <main id="app">
+  <a class="skip-link" href="#practice-card">Skip to practice</a>
 
-        <header>
-            <h1>Round It!</h1>
-            <p>See it. Place it. Round it.</p>
-        </header>
+  <!-- ===== Branding ===== -->
+  <header class="site-header">
+    <div class="brand">
+      <img class="brand-logo" src="assets/images/logo.png"
+           alt="Round It! — See it. Place it. Round it."
+           onerror="this.hidden = true; document.getElementById('brand-text').hidden = false;">
+      <div class="brand-text" id="brand-text" hidden>
+        <h1 class="brand-title">Round&nbsp;It!</h1>
+        <p class="brand-tagline">See it. Place it. Round it.</p>
+      </div>
+    </div>
+  </header>
 
-        <section id="rounding-app">
-            <!-- Round It! will be built here -->
-        </section>
+  <main class="app">
 
-    </main>
+    <!-- ===== Level selector ===== -->
+    <section class="level-section" aria-labelledby="level-heading">
+      <h2 id="level-heading" class="section-heading">Pick your rounding skill</h2>
+      <div class="level-grid" role="radiogroup" aria-labelledby="level-heading">
+        <button type="button" class="level-card" data-level="ten" role="radio" aria-checked="false">
+          <span class="level-badge level-badge-ten" aria-hidden="true">10</span>
+          <span class="level-name">Nearest Ten</span>
+          <span class="level-sub">Round to the nearest 10</span>
+          <span class="level-check" aria-hidden="true">✓</span>
+        </button>
+        <button type="button" class="level-card" data-level="hundred" role="radio" aria-checked="true">
+          <span class="level-badge level-badge-hundred" aria-hidden="true">100</span>
+          <span class="level-name">Nearest Hundred</span>
+          <span class="level-sub">Round to the nearest 100</span>
+          <span class="level-check" aria-hidden="true">✓</span>
+        </button>
+        <button type="button" class="level-card" data-level="thousand" role="radio" aria-checked="false">
+          <span class="level-badge level-badge-thousand" aria-hidden="true">1,000</span>
+          <span class="level-name">Nearest Thousand</span>
+          <span class="level-sub">Round to the nearest 1,000</span>
+          <span class="level-check" aria-hidden="true">✓</span>
+        </button>
+      </div>
+    </section>
 
-    <script src="js/app.js"></script>
+    <!-- ===== Practice card ===== -->
+    <section class="card practice-card" id="practice-card" aria-labelledby="question-text">
 
+      <div class="progress-row">
+        <p class="progress-label" id="progress-label">Question 1 of 10</p>
+        <div class="progress-dots" id="progress-dots" role="img" aria-hidden="true"></div>
+      </div>
+
+      <h2 class="question" id="question-text">
+        Round <span class="q-number" id="q-number">347</span> to the nearest
+        <span class="q-place" id="q-place">hundred</span>
+      </h2>
+
+      <div class="answer-row" id="answer-row">
+        <button type="button" class="answer-btn" id="answer-a" data-value=""></button>
+        <button type="button" class="answer-btn" id="answer-b" data-value=""></button>
+      </div>
+
+      <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
+
+      <div class="tool-row">
+        <button type="button" class="pill-btn hint-btn" id="hint-btn">
+          <span aria-hidden="true">💡</span> Hint
+        </button>
+        <button type="button" class="pill-btn speak-btn" id="speak-btn">
+          <span aria-hidden="true">🔊</span> Read it aloud
+        </button>
+      </div>
+
+      <!-- ===== Dynamic learning section ===== -->
+      <div class="learning-section" id="learning-section" hidden>
+
+        <div class="numberline-wrap">
+          <h3 class="learning-heading">Where does it sit?</h3>
+          <div class="numberline" id="numberline" role="img" aria-label="" >
+            <div class="nl-marker" id="nl-marker">
+              <span class="nl-marker-label" id="nl-marker-label">347</span>
+              <span class="nl-marker-stem" aria-hidden="true"></span>
+            </div>
+            <div class="nl-track">
+              <div class="nl-ticks" id="nl-ticks" aria-hidden="true"></div>
+              <span class="nl-dot nl-dot-lower" id="nl-dot-lower" aria-hidden="true"></span>
+              <span class="nl-dot nl-dot-mid" id="nl-dot-mid" aria-hidden="true"></span>
+              <span class="nl-dot nl-dot-upper" id="nl-dot-upper" aria-hidden="true"></span>
+            </div>
+            <div class="nl-labels" aria-hidden="true">
+              <span class="nl-label nl-label-lower" id="nl-label-lower">300</span>
+              <span class="nl-label nl-label-mid" id="nl-label-mid">350</span>
+              <span class="nl-label nl-label-upper" id="nl-label-upper">400</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="explain-panel" id="hint-panel" hidden>
+          <h3 class="learning-heading">Think it through</h3>
+          <ul class="explain-list" id="hint-list"></ul>
+        </div>
+
+        <div class="explain-panel explain-panel-answer" id="answer-panel" hidden>
+          <h3 class="learning-heading">Why it works</h3>
+          <ul class="explain-list" id="answer-list"></ul>
+        </div>
+
+        <div class="explain-panel digit-panel" id="digit-panel" hidden>
+          <h3 class="learning-heading">Digit check</h3>
+          <p class="digit-display" id="digit-display" aria-hidden="true"></p>
+          <ul class="explain-list" id="digit-list"></ul>
+        </div>
+
+      </div>
+
+      <div class="next-row">
+        <button type="button" class="next-btn" id="next-btn" disabled>Next question →</button>
+      </div>
+
+    </section>
+
+    <!-- ===== Completion screen ===== -->
+    <section class="card summary-card" id="summary-card" hidden aria-labelledby="summary-heading">
+      <p class="summary-emoji" aria-hidden="true">🎉</p>
+      <h2 id="summary-heading" class="summary-heading">Session complete!</h2>
+      <p class="summary-level" id="summary-level">Nearest Hundred</p>
+      <div class="summary-stats">
+        <div class="stat stat-correct">
+          <span class="stat-value" id="stat-correct">0</span>
+          <span class="stat-label">Correct</span>
+        </div>
+        <div class="stat stat-missed">
+          <span class="stat-value" id="stat-missed">0</span>
+          <span class="stat-label">Missed</span>
+        </div>
+        <div class="stat stat-percent">
+          <span class="stat-value" id="stat-percent">0%</span>
+          <span class="stat-label">Score</span>
+        </div>
+      </div>
+      <p class="summary-message" id="summary-message"></p>
+      <button type="button" class="next-btn" id="again-btn">Practice again</button>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <p>Round It! — Build 1 · Made for grades 3–4</p>
+  </footer>
+
+  <script src="js/app.js"></script>
 </body>
-
 </html>
