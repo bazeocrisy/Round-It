@@ -44,6 +44,11 @@
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 
+/* The [hidden] attribute must always win over any class-based display rule
+   (e.g. .roundit-block{display:flex}). Without this, hidden step blocks stay
+   visible and show stale content from a previous example. */
+[hidden] { display: none !important; }
+
 body {
   margin: 0;
   font-family: var(--font-body);
