@@ -1,5 +1,5 @@
 /* =========================================================
-   Round It! — Build 3
+   Round It! — Build 4
    Modes: Learn (tutorial) / Practice (with help) / Test (solo)
    Flow: Home -> Skill -> Mode -> Learn|Practice|Test -> Results
 
@@ -16,7 +16,7 @@
   "use strict";
 
   /* Single source of truth for the release label. */
-  const BUILD_NUMBER = "Build 3";
+  const BUILD_NUMBER = "Build 4";
 
   /* ---------- Level config with place-value metadata ---------- */
   const LEVELS = {
@@ -154,6 +154,7 @@
   function goModes(){
     if(!state.levelKey) return;
     el("modes-skill").textContent = LEVELS[state.levelKey].displayName;
+    var _mt = el("modes-skill-tag"); if(_mt) _mt.textContent = LEVELS[state.levelKey].displayName;
     showScreen("modes");
   }
   function goHome(){ stopSpeech(); showScreen("home"); }
@@ -234,6 +235,7 @@
     el("roundit-block").hidden = true;
     el("seewhy-block").hidden = true;
     el("digit-row").hidden = false;
+    if(el("look-arrow")) el("look-arrow").hidden = true;
     el("learn-step-label").textContent = "Step " + step + " of 5";
     el("learn-question").innerHTML = "Round <strong>" + fmt(p.number) + "</strong> to the nearest " + L.placeWord;
     el("learn-prev").hidden = (step===1);
@@ -251,6 +253,7 @@
       el("learn-step-title").textContent = "Look right";
       el("learn-instruction").textContent = "Now look one place to the right. Tap the digit we need to check.";
       renderDigits(el("digit-row"), p, { onClick: onTapCheck, showTarget:true, showCheck:false });
+      positionLookArrow(p);
       next.disabled = true;
     }
     else if(step===3){
@@ -300,6 +303,29 @@
       next.disabled = false;
       next.textContent = (state.learnIndex < state.learnSet.length-1) ? "Next example \u2192" : "Finish \u2713";
     }
+  }
+
+
+  // Draws the "look one place right" arrow from the target digit to the checking digit.
+  function positionLookArrow(p){
+    var arrow = el("look-arrow");
+    if(!arrow) return;
+    var cells = Array.from(el("digit-row").querySelectorAll(".digit-cell"));
+    if(!cells.length) return;
+    var len = cells.length;
+    var targetCell = cells[len-1-p.targetIndex];
+    var checkCell  = cells[len-1-p.checkIndex];
+    if(!targetCell || !checkCell) return;
+    var area = el("digit-row").parentElement; // .digit-area
+    var ar = area.getBoundingClientRect();
+    var tr = targetCell.getBoundingClientRect();
+    var cr = checkCell.getBoundingClientRect();
+    // In jsdom rects are 0; guard so tests don't error and real browser positions correctly.
+    var startX = (tr.left + tr.width/2) - ar.left;
+    var endX = (cr.left + cr.width/2) - ar.left;
+    arrow.hidden = false;
+    arrow.style.left = startX + "px";
+    arrow.style.width = Math.max(0, endX - startX) + "px";
   }
 
   function onTapTarget(idxFromRight, cell){
@@ -713,6 +739,7 @@
   skillCards.forEach(c=>c.addEventListener("click",()=>selectSkill(c.dataset.level)));
   el("to-modes-btn").addEventListener("click",goModes);
   el("modes-back").addEventListener("click",goHome);
+  var _mh=el("modes-home"); if(_mh) _mh.addEventListener("click",goHome);
   document.querySelectorAll(".mode-card").forEach(c=>c.addEventListener("click",()=>pickMode(c.dataset.mode)));
 
   // Learn
@@ -724,6 +751,7 @@
   el("ld-practice").addEventListener("click",startPractice);
   el("ld-again").addEventListener("click",startLearn);
   el("ld-modes").addEventListener("click",goModes);
+  var _ldh=el("ld-home"); if(_ldh) _ldh.addEventListener("click",goHome);
 
   // Practice
   el("answer-a").addEventListener("click",()=>practiceAnswer(el("answer-a")));

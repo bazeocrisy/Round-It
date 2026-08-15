@@ -64,28 +64,56 @@
 
     <!-- ==================== MODE SELECTION ==================== -->
     <section class="screen screen-modes" id="screen-modes" aria-labelledby="modes-heading" hidden>
+      <div class="modes-bg" aria-hidden="true">
+        <span class="mb-circle mb-c1"></span>
+        <span class="mb-circle mb-c2"></span>
+        <span class="mb-circle mb-c3"></span>
+        <span class="mb-num mb-n1">10</span>
+        <span class="mb-num mb-n2">100</span>
+        <span class="mb-num mb-n3">1,000</span>
+        <span class="mb-ruler" aria-hidden="true"></span>
+      </div>
+
+      <header class="app-header header-modes">
+        <div class="ph-brand"><span class="ph-mark" aria-hidden="true"><span class="ph-mark-dot"></span></span><span class="ph-name">Round It!</span></div>
+        <span class="ph-skill" id="modes-skill-tag">Nearest Ten</span>
+        <button type="button" class="ph-home" id="modes-back"><span aria-hidden="true">&larr;</span> Back</button>
+        <button type="button" class="ph-home" id="modes-home"><span aria-hidden="true">&#127968;</span> Home</button>
+      </header>
+
       <div class="modes-inner">
-        <button type="button" class="back-link" id="modes-back"><span aria-hidden="true">&larr;</span> Back</button>
         <p class="modes-skill" id="modes-skill">Nearest Ten</p>
         <h2 id="modes-heading" class="modes-heading">How do you want to work?</h2>
+        <p class="modes-subtitle">Choose the way you want to learn today.</p>
 
         <div class="mode-grid">
           <button type="button" class="mode-card mode-learn" data-mode="learn">
             <span class="mode-icon" aria-hidden="true">&#127891;</span>
             <span class="mode-name">Learn</span>
             <span class="mode-sub">Teach me step by step</span>
+            <span class="mode-cta">Start Learning &rarr;</span>
           </button>
           <button type="button" class="mode-card mode-practice" data-mode="practice">
             <span class="mode-icon" aria-hidden="true">&#9999;&#65039;</span>
             <span class="mode-name">Practice</span>
             <span class="mode-sub">Let me try with help</span>
+            <span class="mode-cta">Start Practice &rarr;</span>
           </button>
           <button type="button" class="mode-card mode-test" data-mode="test">
             <span class="mode-icon" aria-hidden="true">&#127942;</span>
             <span class="mode-name">Test</span>
             <span class="mode-sub">Let me try on my own</span>
+            <span class="mode-cta">Start Test &rarr;</span>
           </button>
         </div>
+
+        <p class="method-strip" aria-label="The Round It method">
+          <span>Find it</span><span class="ms-arrow" aria-hidden="true">&rarr;</span>
+          <span>Look right</span><span class="ms-arrow" aria-hidden="true">&rarr;</span>
+          <span>Decide</span><span class="ms-arrow" aria-hidden="true">&rarr;</span>
+          <span>Round it</span><span class="ms-arrow" aria-hidden="true">&rarr;</span>
+          <span>See why</span>
+        </p>
       </div>
     </section>
 
@@ -114,7 +142,10 @@
           <p class="learn-question" id="learn-question">Round <strong>745</strong> to the nearest ten</p>
           <p class="learn-instruction" id="learn-instruction">Tap the digit in the tens place.</p>
 
-          <div class="digit-row" id="digit-row" role="group" aria-label="Digits of the number"></div>
+          <div class="digit-area">
+            <div class="digit-row" id="digit-row" role="group" aria-label="Digits of the number"></div>
+            <div class="look-arrow" id="look-arrow" hidden aria-hidden="true"><span class="la-line"></span><span class="la-head">&rarr;</span></div>
+          </div>
 
           <p class="place-labels" id="place-labels" hidden></p>
 
@@ -184,7 +215,8 @@
         <div class="results-actions">
           <button type="button" class="next-btn" id="ld-practice">Practice this skill</button>
           <button type="button" class="ghost-btn" id="ld-again">Learn again</button>
-          <button type="button" class="ghost-btn" id="ld-modes">Back to modes</button>
+          <button type="button" class="ghost-btn" id="ld-modes">Choose another mode</button>
+          <button type="button" class="ghost-btn" id="ld-home">Home</button>
         </div>
       </div>
     </section>

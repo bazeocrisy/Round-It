@@ -608,7 +608,7 @@ button:focus-visible, a:focus-visible {
 }
 
 /* =========================================================
-   BUILD 3 ADDITIONS — modes, Learn tutorial, test, review
+   BUILD 4 ADDITIONS — modes, Learn tutorial, test, review
    ========================================================= */
 
 /* Shared compact app header (Learn/Practice/Test) */
@@ -805,7 +805,7 @@ button.digit-cell:disabled { cursor: default; }
 .review-a { font-weight: 800; color: var(--green-dark); margin: 0 0 4px; }
 .review-why { font-weight: 600; color: var(--muted); margin: 0; font-size: 0.98rem; }
 
-/* ---------- Responsive: Build 3 screens ---------- */
+/* ---------- Responsive: Build 4 screens ---------- */
 @media (min-width: 1100px) and (max-height: 820px) {
   .learn-stage { padding: 16px 32px 20px; }
   .learn-step-title { margin: 2px 0 8px; }
@@ -865,4 +865,121 @@ button.digit-cell:disabled { cursor: default; }
 }
 @media (max-width: 560px) {
   .build-badge { font-size: 0.66rem; padding: 3px 10px; right: 8px; bottom: 8px; opacity: 0.9; }
+}
+
+/* =========================================================
+   BUILD 4 — Mode screen redesign + Step-2 arrow
+   ========================================================= */
+
+/* Branded full-bleed mode screen */
+.screen-modes {
+  position: relative;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 0 0 40px;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(57,197,235,0.30), transparent 60%),
+    radial-gradient(760px 520px at 8% 110%, rgba(109,92,231,0.30), transparent 60%),
+    linear-gradient(160deg, var(--navy) 0%, var(--deep-blue) 55%, #0a3f86 100%);
+  color: #fff;
+  min-height: calc(100vh - 20px);
+  margin: 10px 0;
+}
+
+/* Decorative background layer */
+.modes-bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.mb-circle { position: absolute; border-radius: 50%; opacity: 0.16; }
+.mb-c1 { width: 320px; height: 320px; background: var(--cyan); top: -80px; right: -60px; }
+.mb-c2 { width: 240px; height: 240px; background: var(--purple-blue); bottom: 40px; left: -70px; opacity: 0.2; }
+.mb-c3 { width: 160px; height: 160px; background: var(--yellow); bottom: 120px; right: 8%; opacity: 0.12; }
+.mb-num {
+  position: absolute; font-family: var(--font-display); font-weight: 800;
+  color: rgba(255,255,255,0.07); font-size: 8rem; user-select: none;
+}
+.mb-n1 { top: 14%; left: 6%; }
+.mb-n2 { top: 54%; right: 4%; font-size: 6rem; }
+.mb-n3 { bottom: 6%; left: 14%; font-size: 5rem; }
+.mb-ruler {
+  position: absolute; left: 0; right: 0; bottom: 8%;
+  height: 3px; background: repeating-linear-gradient(90deg, rgba(255,255,255,0.14) 0 2px, transparent 2px 34px);
+}
+
+.header-modes {
+  position: relative; z-index: 2;
+  width: min(1180px, 100% - 48px); margin: 16px auto 0;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.18);
+  grid-template-columns: auto 1fr auto auto;
+}
+.header-modes .ph-skill { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.3); }
+
+.screen-modes .modes-inner {
+  position: relative; z-index: 2;
+  width: min(1180px, 100% - 48px);
+  margin: 0 auto; padding-top: 28px;
+}
+.screen-modes .modes-skill { color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.25); }
+.screen-modes .modes-heading { color: var(--yellow); margin: 4px 0 4px; }
+.modes-subtitle { font-weight: 700; font-size: 1.1rem; color: rgba(255,255,255,0.9); margin: 0 0 28px; text-align: center; }
+
+.screen-modes .mode-grid {
+  grid-template-columns: repeat(3, minmax(0, 340px));
+}
+.screen-modes .mode-card { padding: 30px 24px 24px; }
+.mode-cta {
+  margin-top: 14px;
+  font-family: var(--font-display); font-weight: 800; font-size: 1.05rem;
+  background: rgba(255,255,255,0.22); border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 999px; padding: 8px 22px;
+}
+.mode-test .mode-cta { color: var(--yellow); border-color: rgba(255,212,63,0.5); }
+
+/* Method strip */
+.method-strip {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 8px 12px; margin: 34px auto 0; max-width: 820px;
+  font-family: var(--font-display); font-weight: 800; font-size: 1.05rem;
+  color: #fff;
+}
+.method-strip > span:not(.ms-arrow) {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 999px; padding: 7px 16px;
+}
+.ms-arrow { color: var(--yellow); font-size: 1.2rem; }
+
+/* Step-2 look-right arrow */
+.digit-area { position: relative; display: inline-block; }
+.look-arrow {
+  position: absolute; top: calc(100% + 4px); height: 26px;
+  display: flex; align-items: center; pointer-events: none;
+  animation: arrow-in 0.35s ease;
+}
+.la-line { flex: 1; height: 4px; background: var(--cyan); border-radius: 2px; }
+.la-head { color: var(--cyan); font-size: 1.6rem; font-weight: 900; margin-left: -4px; line-height: 1; }
+@keyframes arrow-in { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: none; } }
+/* Fallback caption so the concept reads even if measured width is 0 (e.g. very old browsers) */
+.look-arrow::after {
+  content: "one place right";
+  position: absolute; top: 100%; left: 0; white-space: nowrap;
+  font-family: var(--font-body); font-weight: 800; font-size: 0.75rem; color: var(--cyan);
+}
+
+/* Mode screen responsive */
+@media (max-width: 900px) {
+  .screen-modes .mode-grid { grid-template-columns: minmax(0, 460px); }
+  .header-modes { grid-template-columns: auto 1fr auto auto !important; }
+  .header-modes .ph-progress { display: none; }
+  .mb-num { font-size: 5rem; }
+  .mb-n1 { font-size: 5rem; }
+}
+@media (max-width: 560px) {
+  .screen-modes { border-radius: 0; margin: 0; min-height: 100vh; }
+  .modes-subtitle { font-size: 1rem; margin-bottom: 20px; }
+  .method-strip { font-size: 0.9rem; gap: 6px 8px; }
+  .method-strip > span:not(.ms-arrow) { padding: 5px 12px; }
+  .header-modes { width: calc(100% - 24px); }
+  .screen-modes .modes-inner { width: calc(100% - 24px); }
+  .mb-num { display: none; }
 }
