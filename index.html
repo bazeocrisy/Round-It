@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Round It! — See it. Place it. Round it.</title>
-  <meta name="description" content="Round It! teaches whole-number rounding for grades 3-4 with Learn, Practice, and Test modes and a dynamic number line.">
+  <meta name="description" content="Round It! teaches whole-number rounding for grades 3-4 with a Skill / Number Size / Mode wizard and Learn, Practice, and Test modes.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -16,115 +16,102 @@
 
   <div class="app-shell" id="main">
 
-    <!-- ========================= HOME ========================= -->
-    <section class="screen screen-home" id="screen-home" aria-labelledby="home-heading">
-      <div class="home-inner">
-        <div class="home-brand">
-          <img class="home-logo" src="assets/images/logo.png"
-               alt="Round It! — See it. Place it. Round it."
-               onerror="this.hidden=true;document.getElementById('home-brand-text').hidden=false;">
-          <div class="home-brand-text" id="home-brand-text" hidden>
-            <h1 class="home-title">Round It!</h1>
-            <p class="home-tagline">See it. Place it. Round it.</p>
+    <!-- ================= WIZARD ================= -->
+    <section class="screen screen-wizard" id="screen-wizard" aria-labelledby="wiz-heading" hidden>
+      <div class="wizard-bg" aria-hidden="true">
+        <span class="mb-circle mb-c1"></span><span class="mb-circle mb-c2"></span><span class="mb-circle mb-c3"></span>
+        <span class="mb-num mb-n1">10</span><span class="mb-num mb-n2">100</span><span class="mb-num mb-n3">1,000</span>
+        <span class="mb-ruler"></span>
+      </div>
+
+      <header class="app-header header-wizard">
+        <div class="ph-brand"><span class="ph-mark" aria-hidden="true"><span class="ph-mark-dot"></span></span><span class="ph-name">Round It!</span></div>
+        <span class="ph-tagline">See it. Place it. Round it.</span>
+        <button type="button" class="nav-btn nav-back" id="wiz-back" hidden><span aria-hidden="true">&larr;</span> Back</button>
+        <button type="button" class="nav-btn nav-home" id="wiz-home"><span aria-hidden="true">&#127968;</span> Home</button>
+      </header>
+
+      <div class="wizard-inner">
+        <ol class="wiz-progress" id="wiz-progress" aria-label="Setup progress">
+          <li data-wstep="1"><span class="wp-num">1</span> Skill</li>
+          <li class="wp-arrow" aria-hidden="true">&rarr;</li>
+          <li data-wstep="2"><span class="wp-num">2</span> Number Size</li>
+          <li class="wp-arrow" aria-hidden="true">&rarr;</li>
+          <li data-wstep="3"><span class="wp-num">3</span> Mode</li>
+        </ol>
+
+        <!-- Wizard step 1: skill -->
+        <div class="wiz-step" id="wiz-step-1">
+          <h2 id="wiz-heading" class="wiz-title">What are we rounding to?</h2>
+          <div class="card-grid skill-grid" role="radiogroup" aria-label="Rounding skill">
+            <button type="button" class="pick-card skill-ten" data-level="ten" role="radio" aria-checked="false">
+              <span class="pick-badge" aria-hidden="true">10</span>
+              <span class="pick-name">Nearest Ten</span>
+              <span class="pick-sub">Round to the nearest 10</span>
+            </button>
+            <button type="button" class="pick-card skill-hundred" data-level="hundred" role="radio" aria-checked="false">
+              <span class="pick-badge" aria-hidden="true">100</span>
+              <span class="pick-name">Nearest Hundred</span>
+              <span class="pick-sub">Round to the nearest 100</span>
+            </button>
+            <button type="button" class="pick-card skill-thousand" data-level="thousand" role="radio" aria-checked="false">
+              <span class="pick-badge" aria-hidden="true">1,000</span>
+              <span class="pick-name">Nearest Thousand</span>
+              <span class="pick-sub">Round to the nearest 1,000</span>
+            </button>
           </div>
         </div>
 
-        <h2 id="home-heading" class="home-heading">Pick your rounding skill</h2>
-
-        <div class="skill-grid" role="radiogroup" aria-labelledby="home-heading">
-          <button type="button" class="skill-card skill-ten" data-level="ten" role="radio" aria-checked="false">
-            <span class="skill-badge" aria-hidden="true">10</span>
-            <span class="skill-name">Nearest Ten</span>
-            <span class="skill-desc">Round to the nearest 10</span>
-            <span class="skill-example" aria-hidden="true">e.g. 145 &rarr; 150</span>
-            <span class="skill-check" aria-hidden="true">&check;</span>
-          </button>
-          <button type="button" class="skill-card skill-hundred" data-level="hundred" role="radio" aria-checked="false">
-            <span class="skill-badge" aria-hidden="true">100</span>
-            <span class="skill-name">Nearest Hundred</span>
-            <span class="skill-desc">Round to the nearest 100</span>
-            <span class="skill-example" aria-hidden="true">e.g. 347 &rarr; 300</span>
-            <span class="skill-check" aria-hidden="true">&check;</span>
-          </button>
-          <button type="button" class="skill-card skill-thousand" data-level="thousand" role="radio" aria-checked="false">
-            <span class="skill-badge" aria-hidden="true">1,000</span>
-            <span class="skill-name">Nearest Thousand</span>
-            <span class="skill-desc">Round to the nearest 1,000</span>
-            <span class="skill-example" aria-hidden="true">e.g. 6,750 &rarr; 7,000</span>
-            <span class="skill-check" aria-hidden="true">&check;</span>
-          </button>
+        <!-- Wizard step 2: number size (options injected by JS) -->
+        <div class="wiz-step" id="wiz-step-2" hidden>
+          <h2 class="wiz-title">How big should the numbers be?</h2>
+          <p class="wiz-sub" id="size-context"></p>
+          <div class="card-grid size-grid" id="size-grid" role="radiogroup" aria-label="Number size"></div>
         </div>
 
-        <button type="button" class="start-btn" id="to-modes-btn" disabled>
-          Choose how to work
-          <span class="start-hint" id="start-hint">Pick a skill above</span>
-        </button>
+        <!-- Wizard step 3: mode -->
+        <div class="wiz-step" id="wiz-step-3" hidden>
+          <h2 class="wiz-title">How do you want to work?</h2>
+          <div class="card-grid mode-grid">
+            <button type="button" class="pick-card mode-card mode-learn" data-mode="learn">
+              <span class="mode-icon" aria-hidden="true">&#127891;</span>
+              <span class="pick-name">Learn</span>
+              <span class="pick-sub">Teach me step by step</span>
+              <span class="mode-cta">Start Learning &rarr;</span>
+            </button>
+            <button type="button" class="pick-card mode-card mode-practice" data-mode="practice">
+              <span class="mode-icon" aria-hidden="true">&#9999;&#65039;</span>
+              <span class="pick-name">Practice</span>
+              <span class="pick-sub">Let me try with help</span>
+              <span class="mode-cta">Start Practice &rarr;</span>
+            </button>
+            <button type="button" class="pick-card mode-card mode-test" data-mode="test">
+              <span class="mode-icon" aria-hidden="true">&#127942;</span>
+              <span class="pick-name">Test</span>
+              <span class="pick-sub">Let me try on my own</span>
+              <span class="mode-cta">Start Test &rarr;</span>
+            </button>
+          </div>
+          <p class="method-strip" aria-label="The Round It method">
+            <span>Find it</span><span class="ms-arrow" aria-hidden="true">&rarr;</span>
+            <span>Look right</span><span class="ms-arrow" aria-hidden="true">&rarr;</span>
+            <span>Decide</span><span class="ms-arrow" aria-hidden="true">&rarr;</span>
+            <span>Round it</span><span class="ms-arrow" aria-hidden="true">&rarr;</span>
+            <span>See why</span>
+          </p>
+        </div>
       </div>
     </section>
 
-    <!-- ==================== MODE SELECTION ==================== -->
-    <section class="screen screen-modes" id="screen-modes" aria-labelledby="modes-heading" hidden>
-      <div class="modes-bg" aria-hidden="true">
-        <span class="mb-circle mb-c1"></span>
-        <span class="mb-circle mb-c2"></span>
-        <span class="mb-circle mb-c3"></span>
-        <span class="mb-num mb-n1">10</span>
-        <span class="mb-num mb-n2">100</span>
-        <span class="mb-num mb-n3">1,000</span>
-        <span class="mb-ruler" aria-hidden="true"></span>
-      </div>
-
-      <header class="app-header header-modes">
-        <div class="ph-brand"><span class="ph-mark" aria-hidden="true"><span class="ph-mark-dot"></span></span><span class="ph-name">Round It!</span></div>
-        <span class="ph-skill" id="modes-skill-tag">Nearest Ten</span>
-        <button type="button" class="ph-home" id="modes-back"><span aria-hidden="true">&larr;</span> Back</button>
-        <button type="button" class="ph-home" id="modes-home"><span aria-hidden="true">&#127968;</span> Home</button>
-      </header>
-
-      <div class="modes-inner">
-        <p class="modes-skill" id="modes-skill">Nearest Ten</p>
-        <h2 id="modes-heading" class="modes-heading">How do you want to work?</h2>
-        <p class="modes-subtitle">Choose the way you want to learn today.</p>
-
-        <div class="mode-grid">
-          <button type="button" class="mode-card mode-learn" data-mode="learn">
-            <span class="mode-icon" aria-hidden="true">&#127891;</span>
-            <span class="mode-name">Learn</span>
-            <span class="mode-sub">Teach me step by step</span>
-            <span class="mode-cta">Start Learning &rarr;</span>
-          </button>
-          <button type="button" class="mode-card mode-practice" data-mode="practice">
-            <span class="mode-icon" aria-hidden="true">&#9999;&#65039;</span>
-            <span class="mode-name">Practice</span>
-            <span class="mode-sub">Let me try with help</span>
-            <span class="mode-cta">Start Practice &rarr;</span>
-          </button>
-          <button type="button" class="mode-card mode-test" data-mode="test">
-            <span class="mode-icon" aria-hidden="true">&#127942;</span>
-            <span class="mode-name">Test</span>
-            <span class="mode-sub">Let me try on my own</span>
-            <span class="mode-cta">Start Test &rarr;</span>
-          </button>
-        </div>
-
-        <p class="method-strip" aria-label="The Round It method">
-          <span>Find it</span><span class="ms-arrow" aria-hidden="true">&rarr;</span>
-          <span>Look right</span><span class="ms-arrow" aria-hidden="true">&rarr;</span>
-          <span>Decide</span><span class="ms-arrow" aria-hidden="true">&rarr;</span>
-          <span>Round it</span><span class="ms-arrow" aria-hidden="true">&rarr;</span>
-          <span>See why</span>
-        </p>
-      </div>
-    </section>
-
-    <!-- ======================== LEARN ======================== -->
+    <!-- ================= LEARN ================= -->
     <section class="screen screen-learn" id="screen-learn" aria-labelledby="learn-step-title" hidden>
       <header class="app-header header-learn">
         <div class="ph-brand"><span class="ph-mark" aria-hidden="true"><span class="ph-mark-dot"></span></span><span class="ph-name">Round It!</span></div>
-        <span class="ph-skill" id="learn-skill">Nearest Ten</span>
-        <span class="ph-mode-tag">Learn</span>
-        <span class="ph-tutorial" id="learn-tutorial">Example 1 of 4</span>
-        <button type="button" class="ph-home" id="learn-back"><span aria-hidden="true">&larr;</span> Modes</button>
+        <span class="ph-chip" id="learn-skill-chip"></span>
+        <span class="ph-chip" id="learn-size-chip"></span>
+        <span class="ph-mode-tag ph-mode-learn">Learn</span>
+        <span class="ph-example" id="learn-example"></span>
+        <button type="button" class="nav-btn nav-home" id="learn-home"><span aria-hidden="true">&#127968;</span> Home</button>
       </header>
 
       <div class="learn-body">
@@ -137,31 +124,23 @@
         </ol>
 
         <div class="learn-stage">
-          <p class="learn-step-label" id="learn-step-label">Step 1 of 5</p>
-          <h2 class="learn-step-title" id="learn-step-title">Find the place</h2>
-          <p class="learn-question" id="learn-question">Round <strong>745</strong> to the nearest ten</p>
-          <p class="learn-instruction" id="learn-instruction">Tap the digit in the tens place.</p>
+          <p class="learn-step-label" id="learn-step-label"></p>
+          <h2 class="learn-step-title" id="learn-step-title"></h2>
+          <p class="learn-question" id="learn-question"></p>
+          <p class="learn-instruction" id="learn-instruction"></p>
 
-          <div class="digit-area">
+          <div class="digit-area" id="learn-digit-area" hidden>
             <div class="digit-row" id="digit-row" role="group" aria-label="Digits of the number"></div>
             <div class="look-arrow" id="look-arrow" hidden aria-hidden="true"><span class="la-line"></span><span class="la-head">&rarr;</span></div>
           </div>
 
           <p class="place-labels" id="place-labels" hidden></p>
-
           <p class="learn-feedback" id="learn-feedback" role="status" aria-live="polite"></p>
 
-          <!-- Decide (Step 3) controls -->
           <div class="decide-block" id="decide-block" hidden>
             <div class="decide-groups">
-              <div class="decide-group decide-down">
-                <span class="decide-caption" aria-hidden="true">&darr; Round Down</span>
-                <span class="decide-digits" id="down-digits">0 1 2 3 4</span>
-              </div>
-              <div class="decide-group decide-up">
-                <span class="decide-caption" aria-hidden="true">&uarr; Round Up</span>
-                <span class="decide-digits" id="up-digits">5 6 7 8 9</span>
-              </div>
+              <div class="decide-group decide-down"><span class="decide-caption" aria-hidden="true">&darr; Round Down</span><span class="decide-digits" id="down-digits">0 1 2 3 4</span></div>
+              <div class="decide-group decide-up"><span class="decide-caption" aria-hidden="true">&uarr; Round Up</span><span class="decide-digits" id="up-digits">5 6 7 8 9</span></div>
             </div>
             <div class="decide-buttons">
               <button type="button" class="decide-btn decide-btn-down" id="decide-down">&darr; Round Down</button>
@@ -169,19 +148,17 @@
             </div>
           </div>
 
-          <!-- Round it (Step 4) -->
           <div class="roundit-block" id="roundit-block" hidden>
-            <p class="roundit-from" id="roundit-from">745</p>
+            <p class="roundit-from" id="roundit-from"></p>
             <p class="roundit-arrow" aria-hidden="true">&darr;</p>
-            <p class="roundit-to" id="roundit-to">750</p>
+            <p class="roundit-to" id="roundit-to"></p>
             <p class="roundit-note" id="roundit-note"></p>
           </div>
 
-          <!-- See why (Step 5) -->
           <div class="seewhy-block" id="seewhy-block" hidden>
             <div class="numberline-panel">
               <div class="numberline" id="learn-numberline" role="img" aria-label="">
-                <div class="nl-marker" id="lnl-marker"><span class="nl-marker-label" id="lnl-marker-label">745</span><span class="nl-marker-stem" aria-hidden="true"></span></div>
+                <div class="nl-marker" id="lnl-marker"><span class="nl-marker-label" id="lnl-marker-label"></span><span class="nl-marker-stem" aria-hidden="true"></span></div>
                 <div class="nl-track">
                   <div class="nl-ticks" id="lnl-ticks" aria-hidden="true"></div>
                   <span class="nl-dot nl-dot-lower" id="lnl-dot-lower" aria-hidden="true"></span>
@@ -189,162 +166,159 @@
                   <span class="nl-dot nl-dot-upper" id="lnl-dot-upper" aria-hidden="true"></span>
                 </div>
                 <div class="nl-labels" aria-hidden="true">
-                  <span class="nl-label nl-label-lower" id="lnl-label-lower">740</span>
-                  <span class="nl-label nl-label-mid" id="lnl-label-mid">745</span>
-                  <span class="nl-label nl-label-upper" id="lnl-label-upper">750</span>
+                  <span class="nl-label nl-label-lower" id="lnl-label-lower"></span>
+                  <span class="nl-label nl-label-mid" id="lnl-label-mid"></span>
+                  <span class="nl-label nl-label-upper" id="lnl-label-upper"></span>
                 </div>
               </div>
             </div>
             <ul class="explain-list" id="seewhy-list"></ul>
           </div>
-
-          <div class="learn-actions">
-            <button type="button" class="ghost-btn" id="learn-prev" hidden><span aria-hidden="true">&larr;</span> Back</button>
-            <button type="button" class="next-btn" id="learn-next" disabled>Next step &rarr;</button>
-          </div>
         </div>
       </div>
+
+      <footer class="activity-foot">
+        <button type="button" class="nav-btn nav-back" id="learn-back"><span aria-hidden="true">&larr;</span> Back</button>
+        <button type="button" class="primary-btn" id="learn-next" disabled>Next step &rarr;</button>
+      </footer>
     </section>
 
-    <!-- ===================== LEARN DONE ====================== -->
+    <!-- ================= LEARN DONE ================= -->
     <section class="screen screen-learn-done" id="screen-learn-done" aria-labelledby="ld-heading" hidden>
       <div class="results-inner">
         <p class="results-emoji" aria-hidden="true">&#127891;</p>
         <h2 id="ld-heading" class="results-heading">Great work!</h2>
-        <p class="results-message" id="ld-message">You learned how to round to the nearest ten.</p>
+        <p class="results-message" id="ld-message"></p>
         <div class="results-actions">
-          <button type="button" class="next-btn" id="ld-practice">Practice this skill</button>
-          <button type="button" class="ghost-btn" id="ld-again">Learn again</button>
-          <button type="button" class="ghost-btn" id="ld-modes">Choose another mode</button>
-          <button type="button" class="ghost-btn" id="ld-home">Home</button>
+          <button type="button" class="primary-btn" id="ld-practice">Practice this skill</button>
+          <button type="button" class="nav-btn" id="ld-again">Learn again</button>
+          <button type="button" class="nav-btn" id="ld-mode">Choose another mode</button>
+          <button type="button" class="nav-btn" id="ld-home">Home</button>
         </div>
       </div>
     </section>
 
-    <!-- ======================= PRACTICE ====================== -->
+    <!-- ================= PRACTICE ================= -->
     <section class="screen screen-practice" id="screen-practice" aria-labelledby="question-text" hidden>
       <header class="app-header header-practice">
         <div class="ph-brand"><span class="ph-mark" aria-hidden="true"><span class="ph-mark-dot"></span></span><span class="ph-name">Round It!</span></div>
-        <span class="ph-skill" id="ph-skill">Nearest Hundred</span>
+        <span class="ph-chip" id="practice-skill-chip"></span>
+        <span class="ph-chip" id="practice-size-chip"></span>
         <span class="ph-mode-tag ph-mode-practice">Practice</span>
-        <div class="ph-progress">
-          <span class="ph-progress-label" id="ph-progress-label">Question 1 of 10</span>
-          <div class="ph-progress-bar" aria-hidden="true"><span class="ph-progress-fill" id="ph-progress-fill"></span></div>
-        </div>
-        <button type="button" class="ph-home" id="practice-modes"><span aria-hidden="true">&larr;</span> Modes</button>
+        <div class="ph-progress"><span class="ph-progress-label" id="ph-progress-label"></span><div class="ph-progress-bar" aria-hidden="true"><span class="ph-progress-fill" id="ph-progress-fill"></span></div></div>
+        <button type="button" class="nav-btn nav-home" id="practice-home"><span aria-hidden="true">&#127968;</span> Home</button>
       </header>
 
       <div class="practice-body">
         <div class="stage">
-          <h2 class="question" id="question-text">Round <span class="q-number" id="q-number">347</span> to the <span class="q-place" id="q-place">nearest hundred</span></h2>
-          <div class="answer-row" id="answer-row">
+          <h2 class="question" id="question-text">Round <span class="q-number" id="q-number"></span> to the <span class="q-place" id="q-place"></span></h2>
+          <div class="answer-row">
             <button type="button" class="answer-tile" id="answer-a" data-value=""></button>
             <span class="answer-or" aria-hidden="true">or</span>
             <button type="button" class="answer-tile" id="answer-b" data-value=""></button>
           </div>
           <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
-
-          <div class="numberline-panel" id="practice-nl-panel">
-            <div class="numberline" id="numberline" role="img" aria-label="">
-              <div class="nl-marker" id="nl-marker"><span class="nl-marker-label" id="nl-marker-label">347</span><span class="nl-marker-stem" aria-hidden="true"></span></div>
-              <div class="nl-track">
-                <div class="nl-ticks" id="nl-ticks" aria-hidden="true"></div>
-                <span class="nl-dot nl-dot-lower" id="nl-dot-lower" aria-hidden="true"></span>
-                <span class="nl-dot nl-dot-mid" id="nl-dot-mid" aria-hidden="true"></span>
-                <span class="nl-dot nl-dot-upper" id="nl-dot-upper" aria-hidden="true"></span>
-              </div>
-              <div class="nl-labels" aria-hidden="true">
-                <span class="nl-label nl-label-lower" id="nl-label-lower">300</span>
-                <span class="nl-label nl-label-mid" id="nl-label-mid">350</span>
-                <span class="nl-label nl-label-upper" id="nl-label-upper">400</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         <div class="teach">
-          <div class="teach-panel teach-hint">
-            <div class="teach-head"><span class="teach-icon" aria-hidden="true">&#128161;</span><h3 class="teach-title">Need a hint?</h3></div>
-            <div class="teach-content">
-              <p class="teach-empty" id="hint-empty">Follow the steps: find it &rarr; look right &rarr; decide &rarr; round it.</p>
-              <ul class="clue-list" id="hint-list"></ul>
-            </div>
-            <button type="button" class="teach-btn hint-btn" id="hint-btn">Show a clue</button>
+          <div class="teach-panel teach-help" id="help-panel">
+            <div class="teach-head"><span class="teach-icon" aria-hidden="true">&#128161;</span><h3 class="teach-title">Need help?</h3></div>
+            <div class="teach-content"><ul class="clue-list" id="hint-list"></ul></div>
+            <button type="button" class="hint-btn" id="hint-btn">Show a hint</button>
           </div>
-          <div class="teach-panel teach-think">
-            <div class="teach-head"><span class="teach-icon" aria-hidden="true">&#129504;</span><h3 class="teach-title">How to think about it</h3></div>
+
+          <div class="teach-panel teach-why" id="why-panel" hidden>
+            <div class="teach-head"><span class="teach-icon" aria-hidden="true">&#9989;</span><h3 class="teach-title">Why it works</h3></div>
             <div class="teach-content">
-              <p class="teach-empty" id="think-empty">Answer the question to see the full reasoning.</p>
-              <ul class="explain-list" id="answer-list" hidden></ul>
-              <div class="digit-block" id="digit-block" hidden>
-                <p class="digit-display" id="digit-display" aria-hidden="true"></p>
-                <ul class="explain-list" id="digit-list"></ul>
+              <ul class="explain-list" id="why-list"></ul>
+              <div class="numberline-panel why-nl">
+                <div class="numberline" id="numberline" role="img" aria-label="">
+                  <div class="nl-marker" id="nl-marker"><span class="nl-marker-label" id="nl-marker-label"></span><span class="nl-marker-stem" aria-hidden="true"></span></div>
+                  <div class="nl-track">
+                    <div class="nl-ticks" id="nl-ticks" aria-hidden="true"></div>
+                    <span class="nl-dot nl-dot-lower" id="nl-dot-lower" aria-hidden="true"></span>
+                    <span class="nl-dot nl-dot-mid" id="nl-dot-mid" aria-hidden="true"></span>
+                    <span class="nl-dot nl-dot-upper" id="nl-dot-upper" aria-hidden="true"></span>
+                  </div>
+                  <div class="nl-labels" aria-hidden="true">
+                    <span class="nl-label nl-label-lower" id="nl-label-lower"></span>
+                    <span class="nl-label nl-label-mid" id="nl-label-mid"></span>
+                    <span class="nl-label nl-label-upper" id="nl-label-upper"></span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
-        <div class="action-bar">
-          <button type="button" class="ghost-btn speak-btn" id="speak-btn"><span aria-hidden="true">&#128266;</span> Read it aloud</button>
-          <button type="button" class="next-btn" id="next-btn" disabled>Next question &rarr;</button>
-        </div>
       </div>
+
+      <footer class="activity-foot">
+        <button type="button" class="nav-btn nav-back" id="practice-back"><span aria-hidden="true">&larr;</span> Back</button>
+        <button type="button" class="nav-btn ghost-speak" id="speak-btn"><span aria-hidden="true">&#128266;</span> Read aloud</button>
+        <button type="button" class="primary-btn" id="next-btn" disabled>Next question &rarr;</button>
+      </footer>
     </section>
 
-    <!-- ========================= TEST ======================== -->
+    <!-- ================= TEST ================= -->
     <section class="screen screen-test" id="screen-test" aria-labelledby="test-question" hidden>
       <header class="app-header header-test">
         <div class="ph-brand"><span class="ph-mark" aria-hidden="true"><span class="ph-mark-dot"></span></span><span class="ph-name">Round It!</span></div>
-        <span class="ph-skill" id="test-skill">Nearest Hundred</span>
+        <span class="ph-chip" id="test-skill-chip"></span>
+        <span class="ph-chip" id="test-size-chip"></span>
         <span class="ph-mode-tag ph-mode-test">Test</span>
-        <div class="ph-progress">
-          <span class="ph-progress-label" id="test-progress-label">Question 1 of 10</span>
-          <div class="ph-progress-bar" aria-hidden="true"><span class="ph-progress-fill" id="test-progress-fill"></span></div>
-        </div>
-        <button type="button" class="ph-home" id="test-home"><span aria-hidden="true">&#8962;</span> Home</button>
+        <div class="ph-progress"><span class="ph-progress-label" id="test-progress-label"></span><div class="ph-progress-bar" aria-hidden="true"><span class="ph-progress-fill" id="test-progress-fill"></span></div></div>
+        <button type="button" class="nav-btn nav-home" id="test-home"><span aria-hidden="true">&#127968;</span> Home</button>
       </header>
 
       <div class="test-body">
         <div class="stage stage-test">
-          <h2 class="question" id="test-question">Round <span class="q-number" id="test-q-number">347</span> to the <span class="q-place" id="test-q-place">nearest hundred</span></h2>
+          <h2 class="question" id="test-question">Round <span class="q-number" id="test-q-number"></span> to the <span class="q-place" id="test-q-place"></span></h2>
           <div class="answer-row">
             <button type="button" class="answer-tile" id="test-answer-a" data-value=""></button>
             <span class="answer-or" aria-hidden="true">or</span>
             <button type="button" class="answer-tile" id="test-answer-b" data-value=""></button>
           </div>
           <p class="feedback" id="test-feedback" role="status" aria-live="polite"></p>
-          <div class="action-bar action-bar-center">
-            <button type="button" class="next-btn" id="test-next" disabled>Next question &rarr;</button>
-          </div>
         </div>
       </div>
+
+      <footer class="activity-foot">
+        <button type="button" class="nav-btn nav-back" id="test-back"><span aria-hidden="true">&larr;</span> Back</button>
+        <button type="button" class="primary-btn" id="test-next" disabled>Next question &rarr;</button>
+      </footer>
     </section>
 
-    <!-- ====================== RESULTS ======================== -->
+    <!-- ================= RESULTS ================= -->
     <section class="screen screen-results" id="screen-results" aria-labelledby="results-heading" hidden>
       <div class="results-inner">
         <p class="results-emoji" id="results-emoji" aria-hidden="true">&#127881;</p>
         <h2 id="results-heading" class="results-heading">Session complete!</h2>
-        <p class="results-skill" id="results-skill">Nearest Hundred</p>
-
-        <div class="results-ring-wrap">
-          <div class="results-ring" id="results-ring"><span class="results-ring-pct" id="stat-percent">0%</span></div>
-        </div>
+        <p class="results-skill" id="results-skill"></p>
+        <div class="results-ring-wrap"><div class="results-ring" id="results-ring"><span class="results-ring-pct" id="stat-percent">0%</span></div></div>
         <div class="results-stats">
           <div class="rstat rstat-correct"><span class="rstat-value" id="stat-correct">0</span><span class="rstat-label">Correct</span></div>
           <div class="rstat rstat-missed"><span class="rstat-value" id="stat-missed">0</span><span class="rstat-label">Missed</span></div>
         </div>
         <p class="results-message" id="results-message"></p>
-
-        <!-- Test review (only shown after a Test) -->
         <div class="review-block" id="review-block" hidden>
           <h3 class="review-heading">Review your misses</h3>
           <div class="review-list" id="review-list"></div>
         </div>
-
         <div class="results-actions" id="results-actions"></div>
       </div>
     </section>
+
+    <!-- ================= LEAVE-TEST DIALOG ================= -->
+    <div class="modal-overlay" id="leave-modal" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="leave-title">
+        <h2 id="leave-title" class="modal-title">Leave this test?</h2>
+        <p class="modal-text">Your progress on this test won't be saved.</p>
+        <div class="modal-actions">
+          <button type="button" class="primary-btn" id="leave-stay">Stay here</button>
+          <button type="button" class="nav-btn" id="leave-go">Leave test</button>
+        </div>
+      </div>
+    </div>
 
     <p class="build-badge" id="build-badge" aria-label="Application version"></p>
 
