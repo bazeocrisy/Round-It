@@ -129,12 +129,7 @@
           <p class="learn-question" id="learn-question"></p>
           <p class="learn-instruction" id="learn-instruction"></p>
 
-          <div class="digit-area" id="learn-digit-area" hidden>
-            <div class="digit-row" id="digit-row" role="group" aria-label="Digits of the number"></div>
-            <div class="look-arrow" id="look-arrow" hidden aria-hidden="true"><span class="la-line"></span><span class="la-head">&rarr;</span></div>
-          </div>
-
-          <p class="place-labels" id="place-labels" hidden></p>
+          <div class="pv-board" id="digit-row" role="group" aria-label="Place-value columns" hidden></div>
           <p class="learn-feedback" id="learn-feedback" role="status" aria-live="polite"></p>
 
           <div class="decide-block" id="decide-block" hidden>
@@ -223,7 +218,10 @@
         <div class="teach">
           <div class="teach-panel teach-help" id="help-panel">
             <div class="teach-head"><span class="teach-icon" aria-hidden="true">&#128161;</span><h3 class="teach-title">Need help?</h3></div>
-            <div class="teach-content"><ul class="clue-list" id="hint-list"></ul></div>
+            <div class="teach-content">
+              <div class="pv-board compact" id="practice-place-value-board" hidden aria-label="Place-value columns"></div>
+              <ul class="clue-list" id="hint-list"></ul>
+            </div>
             <button type="button" class="hint-btn" id="hint-btn">Show a hint</button>
           </div>
 

@@ -1,5 +1,5 @@
 /* =========================================================
-   Round It! — Build 5
+   Round It! — Build 6
    Wizard: Skill -> Number Size -> Mode -> Learn/Practice/Test
    ONE active problem drives every current-problem element.
    Learn containers start EMPTY in HTML; all values come from
@@ -10,7 +10,7 @@
 (function () {
   "use strict";
 
-  const BUILD_NUMBER = "Build 5";
+  const BUILD_NUMBER = "Build 6";
 
   /* ---------- Config ---------- */
   const LEVELS = {
@@ -164,9 +164,10 @@
     const grid=el("size-grid"); grid.innerHTML="";
     SIZE_OPTIONS[state.levelKey].forEach(([val,label,ex])=>{
       const b=document.createElement("button");
-      b.type="button"; b.className="pick-card size-card"; b.dataset.size=val;
+      b.type="button"; b.className="pick-card size-card size-"+val; b.dataset.size=val;
       b.setAttribute("role","radio"); b.setAttribute("aria-checked","false");
-      b.innerHTML='<span class="size-label">'+label+'</span><span class="pick-sub">e.g. '+ex+'</span>';
+      const icon = val==="mixed" ? "\uD83C\uDFB2" : "\uD83D\uDD22";
+      b.innerHTML='<span class="size-icon" aria-hidden="true">'+icon+'</span><span class="size-label">'+label+'</span><span class="pick-sub">e.g. '+ex+'</span>';
       b.addEventListener("click",()=>chooseSize(val,b));
       grid.appendChild(b);
     });
@@ -222,19 +223,64 @@
   }
   function buildList(listEl,lines){ listEl.innerHTML=""; lines.forEach(h=>{const li=document.createElement("li");li.innerHTML=h;listEl.appendChild(li);}); }
 
-  /* ---------- Digit rendering (Learn) ---------- */
-  function renderDigits(container,p,opts){
-    container.innerHTML="";
-    const str=String(p.number), len=str.length;
-    str.split("").forEach((d,i)=>{
-      const idxR=len-1-i;
-      const cell=document.createElement(opts.onClick?"button":"span");
-      cell.className="digit-cell"; cell.textContent=d;
-      if(opts.onClick){ cell.type="button"; cell.setAttribute("aria-label","digit "+d); cell.addEventListener("click",()=>opts.onClick(idxR,cell)); }
-      if(opts.showTarget&&idxR===p.targetIndex) cell.classList.add("digit-target");
-      if(opts.showCheck&&idxR===p.checkIndex) cell.classList.add("digit-check");
-      container.appendChild(cell);
-      if(idxR>0&&idxR%3===0){const c=document.createElement("span");c.className="digit-comma";c.textContent=",";c.setAttribute("aria-hidden","true");container.appendChild(c);}
+
+
+  /* ---------- Place-value board (labels ABOVE digits) ----------
+     Reusable for Learn steps and Practice hints. Columns render
+     left-to-right with the place name above each digit. Highlight
+     state (target / check) and interactivity come from options. */
+  const PLACE_NAMES = ["ones","tens","hundreds","thousands","ten thousands"];
+  function placeLabel(indexFromRight){
+    return (PLACE_NAMES[indexFromRight] || "").toUpperCase();
+  }
+  function renderPlaceValueBoard(container, p, opts){
+    opts = opts || {};
+    container.innerHTML = "";
+    const str = String(p.number), len = str.length;
+    str.split("").forEach((d, i) => {
+      const idxR = len - 1 - i;
+      const col = document.createElement("div");
+      col.className = "pv-col";
+      if(opts.showTarget && idxR===p.targetIndex) col.classList.add("pv-target");
+      if(opts.showCheck && idxR===p.checkIndex) col.classList.add("pv-check");
+
+      const label = document.createElement("span");
+      label.className = "pv-label";
+      const name = placeLabel(idxR);
+      // two-line wrap handled by CSS; keep text intact for screen readers
+      label.textContent = name;
+      col.appendChild(label);
+
+      const cell = document.createElement(opts.onClick ? "button" : "div");
+      cell.className = "pv-cell";
+      cell.textContent = d;
+      if(opts.onClick){
+        cell.type = "button";
+        cell.setAttribute("aria-label", name.toLowerCase()+" digit "+d);
+        cell.addEventListener("click", () => opts.onClick(idxR, col, cell));
+      }
+      col.appendChild(cell);
+
+      // optional caption under the cell (ROUND HERE / CHECK HERE)
+      if(opts.captions){
+        const cap = document.createElement("span");
+        cap.className = "pv-cap";
+        if(idxR===p.targetIndex) cap.textContent = "ROUND HERE";
+        else if(idxR===p.checkIndex) cap.textContent = "CHECK HERE";
+        else cap.innerHTML = "&nbsp;";
+        col.appendChild(cap);
+      }
+
+      container.appendChild(col);
+
+      // Arrow between the target column and the checking column (they are neighbors).
+      if(opts.arrow && idxR===p.targetIndex){
+        const arrow = document.createElement("div");
+        arrow.className = "pv-arrow";
+        arrow.setAttribute("aria-hidden","true");
+        arrow.textContent = "\u2794"; // heavy rightwards arrow
+        container.appendChild(arrow);
+      }
     });
   }
 
@@ -267,9 +313,7 @@
 
     // Reset — hide every step-specific block; only reveal what belongs to `step`.
     el("learn-feedback").textContent=""; el("learn-feedback").className="learn-feedback";
-    el("place-labels").hidden=true;
-    el("learn-digit-area").hidden=true;
-    el("look-arrow").hidden=true;
+    el("digit-row").hidden=true;
     el("decide-block").hidden=true;
     el("roundit-block").hidden=true;
     el("seewhy-block").hidden=true;
@@ -282,21 +326,20 @@
     if(step===1){
       el("learn-step-title").textContent="Find the place";
       el("learn-instruction").textContent="We're rounding to the nearest "+L.placeWord+". Tap the digit in the "+p.targetPlaceName+" place.";
-      el("learn-digit-area").hidden=false;
-      renderDigits(el("digit-row"),p,{onClick:onTapTarget});
+      el("digit-row").hidden=false;
+      renderPlaceValueBoard(el("digit-row"),p,{onClick:onTapTarget});
       next.disabled=true; next.textContent="Next step \u2192";
     } else if(step===2){
       el("learn-step-title").textContent="Look right";
       el("learn-instruction").textContent="Now look one place to the right. Tap the digit we need to check.";
-      el("learn-digit-area").hidden=false;
-      renderDigits(el("digit-row"),p,{onClick:onTapCheck,showTarget:true});
-      positionLookArrow(p);
+      el("digit-row").hidden=false;
+      renderPlaceValueBoard(el("digit-row"),p,{onClick:onTapCheck,showTarget:true,arrow:true,captions:true});
       next.disabled=true; next.textContent="Next step \u2192";
     } else if(step===3){
       el("learn-step-title").textContent="Up or down?";
       el("learn-instruction").innerHTML="The "+p.checkPlaceName+" digit is <strong>"+p.checkDigit+"</strong>. Does it tell us to round up or down?";
-      el("learn-digit-area").hidden=false;
-      renderDigits(el("digit-row"),p,{showTarget:true,showCheck:true});
+      el("digit-row").hidden=false;
+      renderPlaceValueBoard(el("digit-row"),p,{showTarget:true,showCheck:true});
       el("decide-block").hidden=false;
       el("down-digits").className="decide-digits"; el("up-digits").className="decide-digits";
       el("decide-down").disabled=false; el("decide-up").disabled=false;
@@ -328,35 +371,23 @@
       next.textContent=(state.learnIndex<state.learnSet.length-1)?"Next example \u2192":"Finish \u2713";
     }
   }
-  function positionLookArrow(p){
-    const arrow=el("look-arrow"); if(!arrow) return;
-    const cells=Array.from(el("digit-row").querySelectorAll(".digit-cell")); if(!cells.length) return;
-    const len=cells.length, tCell=cells[len-1-p.targetIndex], cCell=cells[len-1-p.checkIndex];
-    if(!tCell||!cCell) return;
-    const area=el("learn-digit-area").getBoundingClientRect();
-    const tr=tCell.getBoundingClientRect(), cr=cCell.getBoundingClientRect();
-    arrow.hidden=false;
-    arrow.style.left=((tr.left+tr.width/2)-area.left)+"px";
-    arrow.style.width=Math.max(0,((cr.left+cr.width/2)-area.left)-((tr.left+tr.width/2)-area.left))+"px";
-  }
-  function onTapTarget(idxR,cell){
+  function onTapTarget(idxR,col,cell){
     const p=state.problem;
     if(idxR===p.targetIndex){
-      cell.classList.add("digit-target");
+      col.classList.add("pv-target");
       el("learn-feedback").textContent="Yes! "+p.targetDigit+" is in the "+p.targetPlaceName+" place.";
       el("learn-feedback").className="learn-feedback good";
-      el("place-labels").hidden=true;
       lockDigits(); el("learn-next").disabled=false;
     } else {
-      el("learn-feedback").textContent="Almost! We're looking for the "+p.targetPlaceName+" place.";
+      el("learn-feedback").textContent="Almost! Look at the place names above the digits. Find "+p.targetPlaceName.toUpperCase()+".";
       el("learn-feedback").className="learn-feedback try";
-      showPlaceLabels(p);
+      pulseTargetLabel();
     }
   }
-  function onTapCheck(idxR,cell){
+  function onTapCheck(idxR,col,cell){
     const p=state.problem;
     if(idxR===p.checkIndex){
-      cell.classList.add("digit-check");
+      col.classList.add("pv-check");
       el("learn-feedback").textContent="Right! The "+p.checkPlaceName+" digit is "+p.checkDigit+".";
       el("learn-feedback").className="learn-feedback good";
       lockDigits(); el("learn-next").disabled=false;
@@ -365,12 +396,12 @@
       el("learn-feedback").className="learn-feedback try";
     }
   }
-  function lockDigits(){ Array.from(el("digit-row").querySelectorAll("button.digit-cell")).forEach(b=>b.disabled=true); }
-  function showPlaceLabels(p){
-    const names=["ones","tens","hundreds","thousands","ten-thousands"];
-    const len=String(p.number).length, parts=[];
-    for(let i=len-1;i>=0;i--){ parts.push(names[i].charAt(0).toUpperCase()+names[i].slice(1)); }
-    el("place-labels").textContent=parts.join("   "); el("place-labels").hidden=false;
+  function lockDigits(){ Array.from(el("digit-row").querySelectorAll("button.pv-cell")).forEach(b=>b.disabled=true); }
+  function pulseTargetLabel(){
+    const p=state.problem;
+    const cols=Array.from(el("digit-row").querySelectorAll(".pv-col"));
+    const len=cols.length; const col=cols[len-1-p.targetIndex];
+    if(col){ const lbl=col.querySelector(".pv-label"); if(lbl){ lbl.classList.remove("pulse"); void lbl.offsetWidth; lbl.classList.add("pulse"); } }
   }
   function onDecide(dir){
     const p=state.problem;
@@ -438,6 +469,7 @@
 
     // Help panel resets; ruler stays HIDDEN until Hint 4 or correct answer.
     el("hint-list").innerHTML=""; el("hint-btn").disabled=false; el("hint-btn").textContent="Show a hint";
+    if(el("practice-place-value-board")){ el("practice-place-value-board").hidden=true; el("practice-place-value-board").innerHTML=""; }
     el("help-panel").hidden=false;
     el("why-panel").hidden=true; el("why-list").innerHTML="";
   }
@@ -445,23 +477,41 @@
     const p=state.problem;
     state.hintStep++;
     const list=el("hint-list"); list.innerHTML="";
+    const board=el("practice-place-value-board");
     const lines=[];
-    if(state.hintStep>=1) lines.push("<strong>Find it.</strong> Which digit is in the "+p.targetPlaceName+" place? (It's "+p.targetDigit+".)");
-    if(state.hintStep>=2) lines.push("<strong>Look right.</strong> The "+p.checkPlaceName+" digit is <strong>"+p.checkDigit+"</strong>.");
-    if(state.hintStep>=3) lines.push("<strong>Decide.</strong> 0&ndash;4 round down \u00b7 5&ndash;9 round up.");
-    if(state.hintStep>=4){
-      lines.push("<strong>Show me on the number line.</strong> "+fmt(p.number)+" is between "+fmt(p.lower)+" and "+fmt(p.upper)+"; halfway is "+fmt(p.midpoint)+".");
-    }
-    buildList(list,lines);
-    if(state.hintStep>=4){
-      // reveal the ruler inside the why-panel area (but not the "why" text yet)
+
+    if(state.hintStep===1){
+      // Hint 1 GUIDES — shows place names, does NOT reveal the target digit.
+      board.hidden=false;
+      renderPlaceValueBoard(board,p,{});
+      lines.push("<strong>Find it.</strong> Look at the place names. Find the <strong>"+p.targetPlaceName+"</strong> place.");
+    } else if(state.hintStep===2){
+      // Highlight target place and show the look-right relationship (no answer).
+      board.hidden=false;
+      renderPlaceValueBoard(board,p,{showTarget:true,arrow:true});
+      lines.push("<strong>Find it.</strong> The <strong>"+p.targetPlaceName+"</strong> place is highlighted.");
+      lines.push("<strong>Look right.</strong> Move one place to the right to the <strong>"+p.checkPlaceName+"</strong> digit.");
+    } else if(state.hintStep===3){
+      board.hidden=false;
+      renderPlaceValueBoard(board,p,{showTarget:true,showCheck:true});
+      lines.push("<strong>Find it.</strong> Round the <strong>"+p.targetPlaceName+"</strong> place.");
+      lines.push("<strong>Look right.</strong> Check the <strong>"+p.checkPlaceName+"</strong> digit.");
+      lines.push("<strong>Decide.</strong> 0&ndash;4 &rarr; round down \u00b7 5&ndash;9 &rarr; round up.");
+    } else if(state.hintStep>=4){
+      board.hidden=false;
+      renderPlaceValueBoard(board,p,{showTarget:true,showCheck:true});
+      lines.push("<strong>Find it.</strong> Round the <strong>"+p.targetPlaceName+"</strong> place.");
+      lines.push("<strong>Look right.</strong> Check the <strong>"+p.checkPlaceName+"</strong> digit.");
+      lines.push("<strong>Decide.</strong> 0&ndash;4 &rarr; round down \u00b7 5&ndash;9 &rarr; round up.");
+      lines.push("<strong>See it.</strong> "+fmt(p.number)+" is between "+fmt(p.lower)+" and "+fmt(p.upper)+"; halfway is "+fmt(p.midpoint)+".");
       el("why-panel").hidden=false;
       el("why-list").innerHTML="";
       renderNumberLine("practice",p,false);
-      el("hint-btn").disabled=true; el("hint-btn").textContent="That's every hint";
-    } else {
-      el("hint-btn").textContent="Show another hint";
     }
+    buildList(list,lines);
+
+    if(state.hintStep>=4){ el("hint-btn").disabled=true; el("hint-btn").textContent="That's every hint"; }
+    else el("hint-btn").textContent="Show another hint";
   }
   const PRAISE=["Great job!","You got it!","Exactly right!","Nice rounding!","Well done!"];
   function practiceAnswer(btn){
