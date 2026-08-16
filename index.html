@@ -38,6 +38,8 @@
           <li data-wstep="2"><span class="wp-num">2</span> Number Size</li>
           <li class="wp-arrow" aria-hidden="true">&rarr;</li>
           <li data-wstep="3"><span class="wp-num">3</span> Mode</li>
+          <li class="wp-arrow wp-len" aria-hidden="true" hidden>&rarr;</li>
+          <li data-wstep="4" class="wp-len" hidden><span class="wp-num">4</span> Length</li>
         </ol>
 
         <!-- Wizard step 1: skill -->
@@ -99,6 +101,29 @@
             <span>Round it</span><span class="ms-arrow" aria-hidden="true">&rarr;</span>
             <span>See why</span>
           </p>
+        </div>
+
+        <!-- Wizard step 4: test length (Test only) -->
+        <div class="wiz-step" id="wiz-step-4" hidden>
+          <h2 class="wiz-title">How many questions?</h2>
+          <p class="wiz-sub">Pick a test length.</p>
+          <div class="card-grid length-grid" role="radiogroup" aria-label="Test length">
+            <button type="button" class="pick-card length-card length-10" data-length="10" role="radio" aria-checked="false">
+              <span class="pick-badge" aria-hidden="true">10</span>
+              <span class="pick-name">Quick Test</span>
+              <span class="pick-sub">10 questions</span>
+            </button>
+            <button type="button" class="pick-card length-card length-25" data-length="25" role="radio" aria-checked="false">
+              <span class="pick-badge" aria-hidden="true">25</span>
+              <span class="pick-name">Full Test</span>
+              <span class="pick-sub">25 questions</span>
+            </button>
+            <button type="button" class="pick-card length-card length-50" data-length="50" role="radio" aria-checked="false">
+              <span class="pick-badge" aria-hidden="true">50</span>
+              <span class="pick-name">Challenge</span>
+              <span class="pick-sub">50 questions</span>
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -271,10 +296,26 @@
       <div class="test-body">
         <div class="stage stage-test">
           <h2 class="question" id="test-question">Round <span class="q-number" id="test-q-number"></span> to the <span class="q-place" id="test-q-place"></span></h2>
-          <div class="answer-row">
-            <button type="button" class="answer-tile" id="test-answer-a" data-value=""></button>
-            <span class="answer-or" aria-hidden="true">or</span>
-            <button type="button" class="answer-tile" id="test-answer-b" data-value=""></button>
+
+          <!-- Typed answer entry (one reusable component, driven by the active problem) -->
+          <div class="entry" id="test-entry">
+            <label class="entry-label" for="test-answer-input">Your answer</label>
+            <input class="entry-input" id="test-answer-input" type="text" readonly inputmode="none" autocomplete="off" spellcheck="false" placeholder="Type your answer" aria-describedby="test-feedback">
+            <div class="keypad" id="test-keypad" role="group" aria-label="Number keypad">
+              <button type="button" class="key" data-key="1">1</button>
+              <button type="button" class="key" data-key="2">2</button>
+              <button type="button" class="key" data-key="3">3</button>
+              <button type="button" class="key" data-key="4">4</button>
+              <button type="button" class="key" data-key="5">5</button>
+              <button type="button" class="key" data-key="6">6</button>
+              <button type="button" class="key" data-key="7">7</button>
+              <button type="button" class="key" data-key="8">8</button>
+              <button type="button" class="key" data-key="9">9</button>
+              <button type="button" class="key key-comma" data-key="," aria-label="comma">,</button>
+              <button type="button" class="key" data-key="0">0</button>
+              <button type="button" class="key key-back" data-key="back" aria-label="backspace">&#9003;</button>
+            </div>
+            <button type="button" class="primary-btn submit-btn" id="test-submit">Submit Answer</button>
           </div>
           <p class="feedback" id="test-feedback" role="status" aria-live="polite"></p>
         </div>
@@ -314,6 +355,19 @@
         <div class="modal-actions">
           <button type="button" class="primary-btn" id="leave-stay">Stay here</button>
           <button type="button" class="nav-btn" id="leave-go">Leave test</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= COMMA POPUP (Test formatting help) ================= -->
+    <div class="modal-overlay comma-overlay" id="comma-modal" hidden>
+      <div class="modal-card comma-card" role="dialog" aria-modal="true" aria-labelledby="comma-title" aria-describedby="comma-text">
+        <p class="comma-spark" aria-hidden="true">&#10024;</p>
+        <h2 id="comma-title" class="modal-title comma-title">Check your comma!</h2>
+        <p class="modal-text comma-text" id="comma-text">Numbers 1,000 and greater need a comma.</p>
+        <p class="comma-example" aria-live="polite"><span class="comma-from" id="comma-from"></span><span class="comma-arrow" aria-hidden="true">&rarr;</span><span class="comma-to" id="comma-to"></span></p>
+        <div class="modal-actions">
+          <button type="button" class="primary-btn comma-fix" id="comma-fix">Fix My Number</button>
         </div>
       </div>
     </div>

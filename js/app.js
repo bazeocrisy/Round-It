@@ -1,6 +1,8 @@
 /* =========================================================
-   Round It! — Build 6
-   Wizard: Skill -> Number Size -> Mode -> Learn/Practice/Test
+   Round It! — Build 7
+   Wizard: Skill -> Number Size -> Mode -> (Test length) -> Learn/Practice/Test
+   Test: typed answers (keypad + keyboard), comma-format teaching,
+   10/25/50 questions, fresh non-duplicate problem set every test.
    ONE active problem drives every current-problem element.
    Learn containers start EMPTY in HTML; all values come from
    the active problem object. Future-step blocks stay [hidden]
@@ -10,7 +12,7 @@
 (function () {
   "use strict";
 
-  const BUILD_NUMBER = "Build 6";
+  const BUILD_NUMBER = "Build 7";
 
   /* ---------- Config ---------- */
   const LEVELS = {
@@ -29,12 +31,17 @@
     hundred:  { "3":[3], "4":[4], mixed:[3,4] },
     thousand: { "4":[4], "5":[5], mixed:[4,5] }
   };
-  const SESSION_LEN = 10;
+  const PRACTICE_LEN = 10;                 // Practice sessions are always 10
+  const TEST_LENGTHS = [10, 25, 50];       // selectable Test lengths
+  const TEST_INPUT_MAX = 8;                // "100,000" is 7 chars; allow a little slack
 
   /* ---------- State ---------- */
   const state = {
     levelKey:null, size:null, mode:null,
+    testLength:10,
     problem:null,
+    // test typed entry
+    testInput:"",
     // practice/test session
     qIndex:0, correct:0, missed:0, answered:false, firstTry:true, hintStep:0,
     usedKeys:new Set(), results:[], testMisses:[],
@@ -140,7 +147,10 @@
     showScreen("wizard");
   }
   function setWizardStep(step){
-    ["1","2","3"].forEach(s=>{ el("wiz-step-"+s).hidden = (s!==String(step)); });
+    ["1","2","3","4"].forEach(s=>{ el("wiz-step-"+s).hidden = (s!==String(step)); });
+    // The Length step only exists for Test; show it in the progress bar once Test is chosen.
+    const showLen = (step===4);
+    Array.from(el("wiz-progress").querySelectorAll(".wp-len")).forEach(n=>n.hidden=!showLen);
     Array.from(el("wiz-progress").querySelectorAll("[data-wstep]")).forEach(li=>{
       const s=Number(li.dataset.wstep);
       li.classList.toggle("done", s<step);
@@ -151,6 +161,9 @@
     // reflect selections
     if(step===1){
       Array.from(document.querySelectorAll(".skill-grid .pick-card")).forEach(c=>c.setAttribute("aria-checked", String(c.dataset.level===state.levelKey)));
+    }
+    if(step===4){
+      Array.from(document.querySelectorAll(".length-grid .pick-card")).forEach(c=>c.setAttribute("aria-checked", String(Number(c.dataset.length)===state.testLength)));
     }
   }
   function chooseSkill(levelKey){
@@ -181,10 +194,17 @@
     state.mode=mode;
     if(mode==="learn") startLearn();
     else if(mode==="practice") startPractice();
-    else startTest();
+    else setWizardStep(4);            // Test asks "How many questions?" first
+  }
+  function chooseLength(n){
+    n=Number(n);
+    if(TEST_LENGTHS.indexOf(n)===-1) n=10;
+    state.testLength=n;
+    startTest();
   }
   function wizardBack(){
-    if(state.wizStep===3) setWizardStep(2);
+    if(state.wizStep===4) setWizardStep(3);
+    else if(state.wizStep===3) setWizardStep(2);
     else if(state.wizStep===2) setWizardStep(1);
   }
 
@@ -456,7 +476,7 @@
   function renderPractice(){
     const p=state.problem,L=LEVELS[state.levelKey];
     if(state.reviewMode){ el("ph-progress-label").textContent="Review "+(state.reviewIndex+1)+" of "+state.reviewTotal; el("ph-progress-fill").style.width=((state.reviewIndex/state.reviewTotal)*100+10)+"%"; }
-    else { el("ph-progress-label").textContent="Question "+(state.qIndex+1)+" of "+SESSION_LEN; el("ph-progress-fill").style.width=((state.qIndex/SESSION_LEN)*100+10)+"%"; }
+    else { el("ph-progress-label").textContent="Question "+(state.qIndex+1)+" of "+PRACTICE_LEN; el("ph-progress-fill").style.width=((state.qIndex/PRACTICE_LEN)*100+10)+"%"; }
     el("q-number").textContent=fmt(p.number);
     el("q-place").textContent="nearest "+L.placeWord;
 
@@ -465,7 +485,7 @@
 
     el("feedback").textContent=""; el("feedback").className="feedback";
     el("next-btn").disabled=true;
-    el("next-btn").textContent = (!state.reviewMode && state.qIndex===SESSION_LEN-1) ? "See my results \u2192" : "Next question \u2192";
+    el("next-btn").textContent = (!state.reviewMode && state.qIndex===PRACTICE_LEN-1) ? "See my results \u2192" : "Next question \u2192";
 
     // Help panel resets; ruler stays HIDDEN until Hint 4 or correct answer.
     el("hint-list").innerHTML=""; el("hint-btn").disabled=false; el("hint-btn").textContent="Show a hint";
@@ -553,62 +573,144 @@
       state.problem=state.reviewQueue[state.reviewIndex];
       renderPractice(); return;
     }
-    if(state.qIndex>=SESSION_LEN-1) finishSession("practice");
+    if(state.qIndex>=PRACTICE_LEN-1) finishSession("practice");
     else loadPractice(false);
   }
 
   /* ====================================================
-     TEST
+     TEST — typed answers, comma teaching, 10/25/50 length
      ==================================================== */
   function startTest(){
-    resetSession(); stampChips("test");
+    resetSession(); stampChips("test");     // resetSession clears usedKeys => fresh set, no dupes
     showScreen("test"); loadTest(true);
   }
   function loadTest(first){
     if(!first) state.qIndex++;
     state.answered=false;
-    state.problem=generateProblem();
+    state.problem=generateProblem();        // frozen until "Next question"
     renderTest();
   }
   function renderTest(){
-    const p=state.problem,L=LEVELS[state.levelKey];
-    el("test-progress-label").textContent="Question "+(state.qIndex+1)+" of "+SESSION_LEN;
-    el("test-progress-fill").style.width=((state.qIndex/SESSION_LEN)*100+10)+"%";
+    const p=state.problem,L=LEVELS[state.levelKey],total=state.testLength;
+    el("test-progress-label").textContent="Question "+(state.qIndex+1)+" of "+total;
+    el("test-progress-fill").style.width=((state.qIndex/total)*100+(100/total))+"%";
     el("test-q-number").textContent=fmt(p.number);
     el("test-q-place").textContent="nearest "+L.placeWord;
-    const vals=Math.random()<0.5?[p.lower,p.upper]:[p.upper,p.lower];
-    [el("test-answer-a"),el("test-answer-b")].forEach((b,i)=>{ b.textContent=fmt(vals[i]); b.dataset.value=String(vals[i]); b.disabled=false; b.className="answer-tile"; });
+    setTestInput("");
+    setEntryEnabled(true);
     el("test-feedback").textContent=""; el("test-feedback").className="feedback";
     el("test-next").disabled=true;
-    el("test-next").textContent = state.qIndex===SESSION_LEN-1 ? "Finish test \u2192" : "Next question \u2192";
+    el("test-next").textContent = state.qIndex===total-1 ? "Finish test \u2192" : "Next question \u2192";
+    focusTestInput();
   }
-  function testAnswer(btn){
-    if(state.answered) return;
+  function focusTestInput(){ try{ el("test-answer-input").focus({preventScroll:true}); }catch(e){} }
+  function setTestInput(v){ state.testInput=v; el("test-answer-input").value=v; }
+  function setEntryEnabled(on){
+    // The display input is always readonly (so tablets/phones don't pop the OS keyboard
+    // over the on-screen keypad); physical keys are routed through onTestKeydown.
+    el("test-answer-input").classList.toggle("locked",!on);
+    el("test-answer-input").setAttribute("aria-disabled",String(!on));
+    Array.from(el("test-keypad").querySelectorAll(".key")).forEach(k=>k.disabled=!on);
+    el("test-submit").disabled=!on;
+  }
+  // Only digits and commas may enter the answer; length capped.
+  function modalOpen(){ return !el("comma-modal").hidden || !el("leave-modal").hidden; }
+  function testKey(k){
+    if(state.answered || modalOpen()) return;   // overlay covers the keypad, but guard in logic too
+    let v=state.testInput;
+    if(k==="back"){ v=v.slice(0,-1); }
+    else if(k===","||/^[0-9]$/.test(k)){ if(v.length<TEST_INPUT_MAX) v+=k; }
+    else return;
+    setTestInput(v);
+    if(el("test-feedback").classList.contains("try")){ el("test-feedback").textContent=""; el("test-feedback").className="feedback"; }
+  }
+  // Physical keyboard/paste into the input: sanitize to digits + commas.
+  function onTestInputChange(){
+    if(state.answered){ el("test-answer-input").value=state.testInput; return; }
+    const clean=el("test-answer-input").value.replace(/[^0-9,]/g,"").slice(0,TEST_INPUT_MAX);
+    setTestInput(clean);
+  }
+  function onTestKeydown(e){
+    if(el("screen-test").hidden) return;
+    if(modalOpen()) return;
+    if(e.key==="Enter"){
+      // Enter on ANY focused button (keypad key, Submit, Back, Home, Next) activates that
+      // button natively; only Enter with focus on the answer field / elsewhere submits.
+      const a=document.activeElement;
+      if(a && a.tagName==="BUTTON") return;
+      e.preventDefault(); testSubmit(); return;
+    }
+    if(e.ctrlKey||e.metaKey||e.altKey) return;
+    if(/^[0-9]$/.test(e.key)||e.key===","){ e.preventDefault(); testKey(e.key); }
+    else if(e.key==="Backspace"||e.key==="Delete"){ e.preventDefault(); testKey("back"); }
+  }
+
+  /* --- Comma / format validation (based ONLY on what the child typed) ---
+     Returns { empty } | { ok, value } | { needsFix, typed, suggested, reason } */
+  function validateTyped(raw){
+    const typed=(raw||"").trim();
+    if(typed==="") return { empty:true };
+    const digits=typed.replace(/,/g,"");
+    if(!/^\d+$/.test(digits)) return { needsFix:true, typed, suggested:"", reason:"digits" };
+    const value=Number(digits);
+    const properlyGrouped=/^\d{1,3}(,\d{3})+$/.test(typed);   // 1,000  10,000  100,000
+    const noCommas=/^\d+$/.test(typed);
+    if(value>=1000){
+      if(properlyGrouped) return { ok:true, value };
+      return { needsFix:true, typed, suggested:fmt(value), reason:"missing" };
+    }
+    // under 1,000: no comma belongs anywhere ("1,00" / "26,00" are format errors)
+    if(noCommas) return { ok:true, value };
+    return { needsFix:true, typed, suggested:fmt(value), reason:"extra" };
+  }
+  function showCommaPopup(res){
+    el("comma-text").textContent = res.reason==="extra"
+      ? "Numbers less than 1,000 don't need a comma."
+      : "Numbers 1,000 and greater need a comma.";
+    el("comma-from").textContent=res.typed;
+    el("comma-to").textContent=res.suggested;
+    el("comma-modal").hidden=false;
+    el("comma-fix").focus();
+  }
+  function commaFix(){
+    el("comma-modal").hidden=true;
+    // preserve what they typed; child fixes the comma themselves
+    focusTestInput();
+  }
+  function testSubmit(){
+    if(state.answered || modalOpen()) return;
+    const res=validateTyped(el("test-answer-input").value);
+    if(res.empty){
+      el("test-feedback").textContent="Type your answer first."; el("test-feedback").className="feedback try";
+      focusTestInput(); return;
+    }
+    if(res.needsFix){ showCommaPopup(res); return; }   // soft stop: nothing recorded, no correctness leak
+    // Record — same message whether right or wrong.
     state.answered=true;
-    const chosen=Number(btn.dataset.value),p=state.problem;
-    const ok=chosen===p.answer;
+    const p=state.problem, ok=(res.value===p.answer);
     if(ok) state.correct++; else { state.missed++; state.testMisses.push(p); }
     state.results.push(ok?"correct":"missed");
-    [el("test-answer-a"),el("test-answer-b")].forEach(b=>{ b.disabled=true; if(Number(b.dataset.value)===chosen) b.classList.add("picked"); });
+    setEntryEnabled(false);
     el("test-feedback").textContent="Answer recorded."; el("test-feedback").className="feedback";
     el("test-next").disabled=false; el("test-next").focus();
   }
   function testNext(){
     if(el("test-next").disabled) return;
     el("test-next").disabled=true; stopSpeech();
-    if(state.qIndex>=SESSION_LEN-1) finishSession("test");
+    if(state.qIndex>=state.testLength-1) finishSession("test");
     else loadTest(false);
   }
-  function testComplete(){ return state.results.length>=SESSION_LEN; }
+  function testComplete(){ return state.results.length>=state.testLength; }
 
   /* ====================================================
      RESULTS
      ==================================================== */
   function finishSession(mode){
-    const pct=Math.round((state.correct/SESSION_LEN)*100);
+    const total = mode==="test" ? state.testLength : PRACTICE_LEN;
+    const pct=Math.round((state.correct/total)*100);
     el("results-skill").textContent=LEVELS[state.levelKey].displayName+" \u00b7 "+sizeChipText()+" \u00b7 "+(mode==="test"?"Test":"Practice");
     el("stat-correct").textContent=state.correct;
-    el("stat-missed").textContent=SESSION_LEN-state.correct;
+    el("stat-missed").textContent=total-state.correct;
     el("stat-percent").textContent=pct+"%";
     el("results-ring").style.setProperty("--pct",pct);
     el("results-heading").textContent=mode==="test"?"Test complete!":"Session complete!";
@@ -657,10 +759,9 @@
 
   /* ---------- Navigation / exits ---------- */
   function goHome(){ stopSpeech(); startWizard(); }
-  function needsTestConfirm(){ return !el("screen-test").hidden && !testComplete() && state.results.length<SESSION_LEN && state.results.length>=0 && state.mode==="test" && !el("screen-results").hidden===false; }
   function tryLeaveTest(after){
     // Confirm only if a test is in progress (not complete)
-    if(!el("screen-test").hidden && state.results.length<SESSION_LEN){
+    if(!el("screen-test").hidden && !testComplete()){
       state.pendingExit=after; el("leave-modal").hidden=false; el("leave-stay").focus();
     } else { after(); }
   }
@@ -672,6 +773,7 @@
   /* ---------- Events ---------- */
   document.querySelectorAll(".skill-grid .pick-card").forEach(c=>c.addEventListener("click",()=>chooseSkill(c.dataset.level)));
   document.querySelectorAll(".mode-grid .mode-card").forEach(c=>c.addEventListener("click",()=>chooseMode(c.dataset.mode)));
+  document.querySelectorAll(".length-grid .pick-card").forEach(c=>c.addEventListener("click",()=>chooseLength(c.dataset.length)));
   el("wiz-back").addEventListener("click",wizardBack);
   el("wiz-home").addEventListener("click",goHome);
 
@@ -693,8 +795,11 @@
   el("practice-back").addEventListener("click",startWizardAtMode);
   el("practice-home").addEventListener("click",goHome);
 
-  el("test-answer-a").addEventListener("click",()=>testAnswer(el("test-answer-a")));
-  el("test-answer-b").addEventListener("click",()=>testAnswer(el("test-answer-b")));
+  el("test-keypad").addEventListener("click",e=>{ const k=e.target.closest(".key"); if(k){ testKey(k.dataset.key); focusTestInput(); } });
+  el("test-answer-input").addEventListener("input",onTestInputChange);
+  el("test-submit").addEventListener("click",testSubmit);
+  el("comma-fix").addEventListener("click",commaFix);
+  document.addEventListener("keydown",onTestKeydown);
   el("test-next").addEventListener("click",testNext);
   el("test-back").addEventListener("click",testBack);
   el("test-home").addEventListener("click",testHome);
@@ -702,7 +807,7 @@
   el("leave-go").addEventListener("click",leaveGo);
 
   /* ---------- Audit hook ---------- */
-  window.__roundit = { calc, generateProblem, buildLearnSet, LEVELS, SIZE_LENGTHS, state, BUILD_NUMBER };
+  window.__roundit = { calc, generateProblem, buildLearnSet, validateTyped, LEVELS, SIZE_LENGTHS, TEST_LENGTHS, PRACTICE_LEN, state, BUILD_NUMBER };
 
   /* ---------- Boot ---------- */
   (function stampBuild(){ const b=el("build-badge"); if(b) b.textContent="Round It! \u2014 "+BUILD_NUMBER; })();
