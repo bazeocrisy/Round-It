@@ -314,12 +314,14 @@
       }
       col.appendChild(wrap);
 
-      // optional caption under the cell (ROUND HERE / CHECK HERE)
-      if(opts.captions){
+      // optional captions under the cells — each one independently controlled so
+      // Learn Step 2 can show ROUND HERE first and reveal CHECK HERE only after
+      // the child taps the checking digit.
+      if(opts.showTargetCaption || opts.showCheckCaption){
         const cap = document.createElement("span");
         cap.className = "pv-cap";
-        if(idxR===p.targetIndex) cap.textContent = "ROUND HERE";
-        else if(idxR===p.checkIndex) cap.textContent = "CHECK HERE";
+        if(opts.showTargetCaption && idxR===p.targetIndex) cap.textContent = "ROUND HERE";
+        else if(opts.showCheckCaption && idxR===p.checkIndex) cap.textContent = "CHECK HERE";
         else cap.innerHTML = "&nbsp;";
         col.appendChild(cap);
       }
@@ -378,7 +380,8 @@
       el("learn-step-title").textContent="Look right";
       el("learn-instruction").textContent="Now look one place to the right. Tap the digit we need to check.";
       el("digit-row").hidden=false;
-      renderPlaceValueBoard(el("digit-row"),p,{onClick:onTapCheck,showTarget:true,arrow:true,captions:true});
+      // Checking place stays neutral (no gold, no CHECK HERE) until the child finds it.
+      renderPlaceValueBoard(el("digit-row"),p,{onClick:onTapCheck,showTarget:true,arrow:true,showTargetCaption:true});
       next.disabled=true; next.textContent="Next step \u2192";
     } else if(step===3){
       el("learn-step-title").textContent="Up or down?";
@@ -433,6 +436,7 @@
     const p=state.problem;
     if(idxR===p.checkIndex){
       col.classList.add("pv-check");
+      const cap=col.querySelector(".pv-cap"); if(cap) cap.textContent="CHECK HERE";   // reveal only now
       el("learn-feedback").textContent="Right! The "+p.checkPlaceName+" digit is "+p.checkDigit+".";
       el("learn-feedback").className="learn-feedback good";
       lockDigits(); el("learn-next").disabled=false;

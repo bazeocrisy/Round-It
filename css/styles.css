@@ -153,6 +153,7 @@ h1,h2,h3{color:var(--navy);}
 .wiz-progress li.done .wp-num::after{content:"\2713";font-size:.9rem;}
 .wp-arrow{color:var(--muted);}
 
+.wiz-logo{display:block;width:min(420px,70%);height:auto;margin:0 auto 6px;}
 .wiz-title{font-family:var(--font-display);font-weight:800;font-size:clamp(1.6rem,4vw,2.4rem);text-align:center;margin:0 0 6px;}
 .wiz-sub{text-align:center;color:var(--muted);font-weight:700;margin:0 0 24px;}
 
@@ -215,7 +216,7 @@ h1,h2,h3{color:var(--navy);}
   justify-content:center;align-items:end;gap:var(--pv-gap);width:100%;margin:8px 0;}
 .pv-board.compact{--pv-gap:8px;--pv-colmax:82px;--pv-colpad:6px;margin:4px 0 12px;}
 .pv-col{min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px;border-radius:var(--radius-md);padding:var(--pv-colpad);transition:background .2s ease,box-shadow .2s ease;}
-.pv-label{font-family:var(--font-display);font-weight:800;font-size:.8rem;letter-spacing:.5px;color:var(--muted);text-align:center;width:100%;line-height:1.05;text-transform:uppercase;overflow-wrap:anywhere;}
+.pv-label{font-family:var(--font-display);font-weight:800;font-size:.8rem;letter-spacing:.5px;color:var(--muted);text-align:center;width:100%;line-height:1.05;text-transform:uppercase;overflow-wrap:normal;word-break:keep-all;hyphens:none;}
 .pv-label.pulse{animation:pulse .5s ease;color:var(--royal-blue);}
 .pv-cellwrap{position:relative;width:100%;}
 .pv-cell{display:block;width:100%;min-width:0;min-height:44px;font-family:var(--font-display);font-weight:800;font-size:clamp(1.9rem,7vw,3.8rem);line-height:1;color:var(--navy);background:#fff;border:4px solid #D8E4F4;border-radius:var(--radius-md);padding:10px 0;text-align:center;transition:transform .12s ease,background .2s ease,border-color .2s ease,color .2s ease;}
@@ -395,18 +396,6 @@ button.pv-cell:disabled{cursor:default;}
 .length-50{background:linear-gradient(160deg,var(--purple),var(--navy));}
 .length-50 .pick-name,.length-50 .pick-badge{color:var(--yellow);}
 
-/* Comma popup — bright, friendly, clearly not a "wrong answer" */
-.comma-overlay{background:rgba(18,50,91,.45);}
-.comma-card{background:linear-gradient(170deg,var(--yellow) 0%,var(--soft-yellow) 55%,#fff 100%);border:5px solid var(--orange);box-shadow:0 0 0 6px rgba(255,216,77,.55),var(--shadow-card);max-width:460px;padding:22px 30px 26px;}
-.comma-spark{font-size:2.2rem;margin:0;}
-.comma-title{color:var(--navy);font-size:1.7rem;letter-spacing:.5px;text-transform:uppercase;}
-.comma-text{color:var(--navy);font-weight:800;font-size:1.1rem;margin-bottom:14px;}
-.comma-example{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin:0 0 20px;font-family:var(--font-display);font-weight:800;font-size:clamp(1.6rem,4vw,2.2rem);}
-.comma-from{color:var(--orange-dark);background:#fff;border:3px dashed var(--orange);border-radius:var(--radius-sm);padding:2px 14px;text-decoration:line-through;text-decoration-thickness:3px;}
-.comma-arrow{color:var(--navy);font-size:1.6rem;}
-.comma-to{color:#fff;background:linear-gradient(160deg,var(--green),var(--green-dark));border-radius:var(--radius-sm);padding:2px 16px;}
-.comma-fix{background:linear-gradient(160deg,var(--green),var(--green-dark));box-shadow:0 5px 0 var(--green-dark);}
-
 /* ---------- 11. RESULTS ---------- */
 .screen-results{justify-content:center;align-items:center;padding:32px 0 48px;}
 .results-inner{width:min(560px,100%);background:#fff;border-radius:var(--radius-xl);box-shadow:var(--shadow-card);padding:36px 34px 34px;text-align:center;animation:rise .4s ease;}
@@ -439,6 +428,18 @@ button.pv-cell:disabled{cursor:default;}
 .modal-title{font-family:var(--font-display);font-weight:800;font-size:1.5rem;margin:0 0 8px;}
 .modal-text{color:var(--muted);font-weight:600;margin:0 0 20px;}
 .modal-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+
+/* Comma popup — bright, friendly, clearly not a "wrong answer" */
+.modal-overlay.comma-overlay{background:rgba(18,50,91,.45);}
+.modal-card.comma-card{background-color:#FFD84D;background-image:linear-gradient(170deg,var(--yellow) 0%,var(--soft-yellow) 55%,#fff 100%);border:5px solid var(--orange);box-shadow:0 0 0 6px rgba(255,216,77,.55),var(--shadow-card);max-width:460px;padding:22px 30px 26px;}
+.comma-spark{font-size:2.2rem;margin:0;}
+.comma-title{color:var(--navy);font-size:1.7rem;letter-spacing:.5px;text-transform:uppercase;}
+.comma-text{color:var(--navy);font-weight:800;font-size:1.1rem;margin-bottom:14px;}
+.comma-example{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin:0 0 20px;font-family:var(--font-display);font-weight:800;font-size:clamp(1.6rem,4vw,2.2rem);}
+.comma-from{color:var(--orange-dark);background:#fff;border:3px dashed var(--orange);border-radius:var(--radius-sm);padding:2px 14px;text-decoration:line-through;text-decoration-thickness:3px;}
+.comma-arrow{color:var(--navy);font-size:1.6rem;}
+.comma-to{color:#fff;background:linear-gradient(160deg,var(--green),var(--green-dark));border-radius:var(--radius-sm);padding:2px 16px;}
+.comma-fix{background:linear-gradient(160deg,var(--green),var(--green-dark));box-shadow:0 5px 0 var(--green-dark);}
 
 /* ---------- 13. BUILD BADGE ---------- */
 .build-badge{position:fixed;right:12px;bottom:10px;margin:0;z-index:40;font-family:var(--font-body);font-weight:800;font-size:.72rem;letter-spacing:.3px;color:var(--muted);background:rgba(255,255,255,.85);border:1px solid rgba(18,50,91,.1);border-radius:999px;padding:4px 12px;box-shadow:0 2px 8px rgba(18,50,91,.08);pointer-events:none;max-width:calc(100vw - 24px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -480,6 +481,7 @@ button.pv-cell:disabled{cursor:default;}
   .wizard-inner{padding:12px 0 24px;width:min(1120px,100% - 24px);}
   .wiz-progress{margin:2px 0 12px;gap:6px;font-size:.9rem;}
   .wiz-title{margin-bottom:10px;font-size:1.45rem;}
+  .wiz-logo{width:min(300px,66%);margin-bottom:2px;}
   .card-grid{gap:12px;}
   .skill-grid{grid-template-columns:minmax(0,1fr);}
   .skill-grid .pick-card{display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;column-gap:14px;row-gap:2px;align-items:center;text-align:left;padding:14px 16px;min-height:100px;}
@@ -514,13 +516,15 @@ button.pv-cell:disabled{cursor:default;}
 @media (max-width:400px){
   .answer-row{flex-direction:column;}
   .answer-tile{max-width:100%;width:100%;}
-  .pv-board{--pv-gap:5px;--pv-colpad:2px;}
-  .pv-board.compact{--pv-gap:4px;--pv-colpad:2px;}
-  .pv-label,.pv-board.compact .pv-label{font-size:.52rem;letter-spacing:0;}
-  .pv-cap{font-size:.5rem;letter-spacing:0;}
+  .pv-board{--pv-gap:5px;--pv-colpad:0px;}
+  .pv-board.compact{--pv-gap:4px;--pv-colpad:0px;}
+  .pv-col{padding-top:2px;padding-bottom:2px;}
+  .pv-label,.pv-board.compact .pv-label{font-size:.5rem;letter-spacing:0;}
+  .pv-cap{font-size:.48rem;letter-spacing:0;}
   .pv-cell{padding:6px 0;}
-  .teach-panel{padding:14px 10px 16px;}
-  .stage,.learn-stage{padding:16px 10px 18px;}
+  .teach-panel{padding:14px 8px 16px;}
+  .stage,.learn-stage{padding:16px 8px 18px;}
+  .wiz-logo{width:min(260px,62%);}
   .key{min-height:48px;}
   .entry-input{font-size:1.8rem;}
 }
