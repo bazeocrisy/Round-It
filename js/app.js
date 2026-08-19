@@ -1,5 +1,5 @@
 /* =========================================================
-   Round It! — Build 7
+   Round It! — Build 8
    Wizard: Skill -> Number Size -> Mode -> (Test length) -> Learn/Practice/Test
    Test: typed answers (keypad + keyboard), comma-format teaching,
    10/25/50 questions, fresh non-duplicate problem set every test.
@@ -12,7 +12,7 @@
 (function () {
   "use strict";
 
-  const BUILD_NUMBER = "Build 7";
+  const BUILD_NUMBER = "Build 8";
 
   /* ---------- Config ---------- */
   const LEVELS = {
@@ -157,6 +157,7 @@
       li.classList.toggle("current", s===step);
     });
     el("wiz-back").hidden = (step===1);
+    el("wiz-home").hidden = (step===1);     // Step 1 IS home — no redundant Home/Back
     state.wizStep=step;
     // reflect selections
     if(step===1){
@@ -179,12 +180,30 @@
       const b=document.createElement("button");
       b.type="button"; b.className="pick-card size-card size-"+val; b.dataset.size=val;
       b.setAttribute("role","radio"); b.setAttribute("aria-checked","false");
-      const icon = val==="mixed" ? "\uD83C\uDFB2" : "\uD83D\uDD22";
-      b.innerHTML='<span class="size-icon" aria-hidden="true">'+icon+'</span><span class="size-label">'+label+'</span><span class="pick-sub">e.g. '+ex+'</span>';
+      b.innerHTML=sizeVisual(val)+'<span class="size-label">'+label+'</span><span class="pick-sub">e.g. '+ex+'</span>';
       b.addEventListener("click",()=>chooseSize(val,b));
       grid.appendChild(b);
     });
   }
+  // Visual for a Number Size card: one tile per DIGIT (commas are separators,
+  // not digits) so "2 Digits" shows exactly 2 tiles, "5 Digits" exactly 5.
+  function sizeVisual(val){
+    if(val==="mixed"){
+      const lens=SIZE_LENGTHS[state.levelKey].mixed;
+      const nums=lens.map(len=>fmt(Number(sampleDigits(len))));
+      return '<span class="size-mixed" aria-hidden="true">'+nums.join('<span class="size-dot">\u2022</span>')+'</span>';
+    }
+    const digits=sampleDigits(Number(val));
+    let html='<span class="size-digits" data-digits="'+digits.length+'" aria-hidden="true">';
+    digits.split("").forEach((d,i)=>{
+      const fromRight=digits.length-i;
+      if(i>0 && fromRight%3===0) html+='<span class="size-comma">,</span>';
+      html+='<span class="size-digit">'+d+'</span>';
+    });
+    return html+'</span>';
+  }
+  const SAMPLE_DIGITS={2:"47",3:"347",4:"2347",5:"38700"};
+  function sampleDigits(len){ return SAMPLE_DIGITS[len]||"1".repeat(len); }
   function chooseSize(val,btn){
     state.size=val;
     Array.from(el("size-grid").children).forEach(c=>c.setAttribute("aria-checked", String(c===btn)));
@@ -545,7 +564,7 @@
     const chosen=Number(btn.dataset.value),p=state.problem;
     if(chosen===p.answer){
       state.answered=true;
-      if(!state.reviewMode){ state.results.push(state.firstTry?"correct":"missed"); if(state.firstTry)state.correct++; else state.missed++; }
+      state.results.push(state.firstTry?"correct":"missed"); if(state.firstTry)state.correct++; else state.missed++;
       btn.className="answer-tile correct";
       [el("answer-a"),el("answer-b")].forEach(b=>{b.disabled=true; if(b!==btn)b.classList.add("dimmed");});
       el("feedback").textContent=PRAISE[randInt(0,PRAISE.length-1)]+" "+fmt(p.number)+" rounds to "+fmt(p.answer)+".";
@@ -574,7 +593,7 @@
     el("next-btn").disabled=true; stopSpeech();
     if(state.reviewMode){
       state.reviewIndex++;
-      if(state.reviewIndex>=state.reviewTotal){ state.reviewMode=false; finishSession("practice"); return; }
+      if(state.reviewIndex>=state.reviewTotal){ finishSession("review"); state.reviewMode=false; return; }
       state.answered=false; state.firstTry=true; state.hintStep=0;
       state.problem=state.reviewQueue[state.reviewIndex];
       renderPractice(); return;
@@ -712,14 +731,14 @@
      RESULTS
      ==================================================== */
   function finishSession(mode){
-    const total = mode==="test" ? state.testLength : PRACTICE_LEN;
+    const total = mode==="test" ? state.testLength : mode==="review" ? state.reviewTotal : PRACTICE_LEN;
     const pct=Math.round((state.correct/total)*100);
-    el("results-skill").textContent=LEVELS[state.levelKey].displayName+" \u00b7 "+sizeChipText()+" \u00b7 "+(mode==="test"?"Test":"Practice");
+    el("results-skill").textContent=LEVELS[state.levelKey].displayName+" \u00b7 "+sizeChipText()+" \u00b7 "+(mode==="test"?"Test":mode==="review"?"Review":"Practice");
     el("stat-correct").textContent=state.correct;
     el("stat-missed").textContent=total-state.correct;
     el("stat-percent").textContent=pct+"%";
     el("results-ring").style.setProperty("--pct",pct);
-    el("results-heading").textContent=mode==="test"?"Test complete!":"Session complete!";
+    el("results-heading").textContent=mode==="test"?"Test complete!":mode==="review"?"Review complete!":"Session complete!";
     let msg,emoji;
     if(pct===100){msg="Perfect score \u2014 you're a rounding champion!";emoji="\uD83C\uDFC6";}
     else if(pct>=80){msg="Fantastic work! You really know your benchmarks.";emoji="\uD83C\uDF89";}
@@ -801,7 +820,7 @@
   el("practice-back").addEventListener("click",startWizardAtMode);
   el("practice-home").addEventListener("click",goHome);
 
-  el("test-keypad").addEventListener("click",e=>{ const k=e.target.closest(".key"); if(k){ testKey(k.dataset.key); focusTestInput(); } });
+  el("test-keypad").addEventListener("click",e=>{ const k=e.target.closest(".key"); if(k) testKey(k.dataset.key); });
   el("test-answer-input").addEventListener("input",onTestInputChange);
   el("test-submit").addEventListener("click",testSubmit);
   el("comma-fix").addEventListener("click",commaFix);
