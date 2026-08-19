@@ -256,7 +256,7 @@
   function renderPlaceValueBoard(container, p, opts){
     opts = opts || {};
     container.innerHTML = "";
-    const str = String(p.number), len = str.length;
+    const str = String(p.number), len = str.length;   // DOM order == digit order
     str.split("").forEach((d, i) => {
       const idxR = len - 1 - i;
       const col = document.createElement("div");
@@ -271,6 +271,8 @@
       label.textContent = name;
       col.appendChild(label);
 
+      const wrap = document.createElement("div");
+      wrap.className = "pv-cellwrap";
       const cell = document.createElement(opts.onClick ? "button" : "div");
       cell.className = "pv-cell";
       cell.textContent = d;
@@ -279,7 +281,19 @@
         cell.setAttribute("aria-label", name.toLowerCase()+" digit "+d);
         cell.addEventListener("click", () => opts.onClick(idxR, col, cell));
       }
-      col.appendChild(cell);
+      wrap.appendChild(cell);
+      // Arrow from the target column to the checking column (its right-hand
+      // neighbour). It lives INSIDE the target column and is positioned over
+      // the gap, so it never becomes an extra track that could push a column
+      // onto a second row.
+      if(opts.arrow && idxR===p.targetIndex){
+        const arrow = document.createElement("span");
+        arrow.className = "pv-arrow";
+        arrow.setAttribute("aria-hidden","true");
+        arrow.textContent = "\u2794";
+        wrap.appendChild(arrow);
+      }
+      col.appendChild(wrap);
 
       // optional caption under the cell (ROUND HERE / CHECK HERE)
       if(opts.captions){
@@ -292,16 +306,8 @@
       }
 
       container.appendChild(col);
-
-      // Arrow between the target column and the checking column (they are neighbors).
-      if(opts.arrow && idxR===p.targetIndex){
-        const arrow = document.createElement("div");
-        arrow.className = "pv-arrow";
-        arrow.setAttribute("aria-hidden","true");
-        arrow.textContent = "\u2794"; // heavy rightwards arrow
-        container.appendChild(arrow);
-      }
     });
+    container.dataset.digits = String(len);
   }
 
   /* ====================================================

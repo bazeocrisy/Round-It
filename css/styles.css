@@ -198,18 +198,27 @@ h1,h2,h3{color:var(--navy);}
 .method-strip>span:not(.ms-arrow){background:#fff;border:2px solid var(--soft-blue);border-radius:999px;padding:7px 16px;box-shadow:var(--shadow-soft);}
 .ms-arrow{color:var(--gold);font-size:1.2rem;}
 
-/* ---------- 6. PLACE-VALUE COMPONENT ---------- */
-.pv-board{display:flex;align-items:flex-end;justify-content:center;gap:14px;flex-wrap:wrap;margin:8px 0;}
-.pv-board.compact{gap:8px;margin:4px 0 12px;}
-.pv-col{display:flex;flex-direction:column;align-items:center;gap:8px;border-radius:var(--radius-md);padding:8px;transition:background .2s ease,box-shadow .2s ease;}
-.pv-label{font-family:var(--font-display);font-weight:800;font-size:.8rem;letter-spacing:.5px;color:var(--muted);text-align:center;max-width:96px;line-height:1.05;text-transform:uppercase;}
+/* ---------- 6. PLACE-VALUE COMPONENT ----------
+   ONE horizontal row of N digit columns, always. The board is a grid whose
+   tracks are minmax(0, --pv-colmax): on wide screens each column is capped
+   at --pv-colmax and the row is centered; on narrow screens the tracks shrink
+   equally so 5 columns always fit. Digit order is DOM order (never reordered).
+   The arrow is anchored INSIDE the target column (absolutely positioned over
+   the gap to the checking column) so it never takes a grid track of its own. */
+.pv-board{--pv-gap:14px;--pv-colmax:104px;--pv-colpad:8px;
+  display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,var(--pv-colmax));
+  justify-content:center;align-items:end;gap:var(--pv-gap);width:100%;margin:8px 0;}
+.pv-board.compact{--pv-gap:8px;--pv-colmax:82px;--pv-colpad:6px;margin:4px 0 12px;}
+.pv-col{min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px;border-radius:var(--radius-md);padding:var(--pv-colpad);transition:background .2s ease,box-shadow .2s ease;}
+.pv-label{font-family:var(--font-display);font-weight:800;font-size:.8rem;letter-spacing:.5px;color:var(--muted);text-align:center;width:100%;line-height:1.05;text-transform:uppercase;overflow-wrap:anywhere;}
 .pv-label.pulse{animation:pulse .5s ease;color:var(--royal-blue);}
-.pv-cell{font-family:var(--font-display);font-weight:800;font-size:clamp(2.4rem,6vw,3.8rem);line-height:1;color:var(--navy);background:#fff;border:4px solid #D8E4F4;border-radius:var(--radius-md);padding:10px 18px;min-width:70px;text-align:center;transition:transform .12s ease,background .2s ease,border-color .2s ease,color .2s ease;}
+.pv-cellwrap{position:relative;width:100%;}
+.pv-cell{display:block;width:100%;min-width:0;min-height:44px;font-family:var(--font-display);font-weight:800;font-size:clamp(1.9rem,7vw,3.8rem);line-height:1;color:var(--navy);background:#fff;border:4px solid #D8E4F4;border-radius:var(--radius-md);padding:10px 0;text-align:center;transition:transform .12s ease,background .2s ease,border-color .2s ease,color .2s ease;}
 button.pv-cell{cursor:pointer;}
 button.pv-cell:hover:not(:disabled){transform:translateY(-4px);border-color:var(--sky-blue);}
 button.pv-cell:disabled{cursor:default;}
-.pv-cap{font-family:var(--font-display);font-weight:800;font-size:.72rem;letter-spacing:.5px;color:var(--muted);min-height:1em;}
-.pv-board.compact .pv-cell{font-size:clamp(1.8rem,5vw,2.6rem);min-width:52px;padding:6px 12px;}
+.pv-cap{font-family:var(--font-display);font-weight:800;font-size:.72rem;letter-spacing:.5px;color:var(--muted);min-height:1em;text-align:center;width:100%;line-height:1.05;}
+.pv-board.compact .pv-cell{font-size:clamp(1.5rem,6vw,2.6rem);padding:6px 0;}
 .pv-board.compact .pv-label{font-size:.68rem;}
 
 /* target (rounding place) = blue */
@@ -221,8 +230,13 @@ button.pv-cell:disabled{cursor:default;}
 .pv-check .pv-label{color:var(--gold-dark);}
 .pv-check .pv-cap{color:var(--gold-dark);}
 
-/* the big between-columns arrow */
-.pv-arrow{align-self:center;font-size:clamp(2.2rem,5vw,3.2rem);color:var(--royal-blue);font-weight:900;line-height:1;padding-bottom:34px;animation:rise .3s ease;}
+/* arrow from the target column to its right-hand neighbour: sits over the gap */
+.pv-arrow{position:absolute;top:50%;right:0;z-index:2;
+  transform:translate(calc(50% + var(--pv-gap) / 2 + var(--pv-colpad)),-50%);
+  font-size:clamp(1.15rem,4.2vw,1.9rem);line-height:1;font-weight:900;color:var(--royal-blue);
+  background:#fff;border:3px solid var(--royal-blue);border-radius:50%;
+  width:1.55em;height:1.55em;display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-soft);pointer-events:none;animation:rise .3s ease;}
 
 /* ---------- 7. LEARN ---------- */
 .learn-body{display:grid;grid-template-columns:250px 1fr;gap:16px;margin-top:16px;flex:1;}
@@ -459,14 +473,17 @@ button.pv-cell:disabled{cursor:default;}
   .answer-or{display:none;}
   .numberline{margin:0 24px;}
   .nl-tick:not(.major){display:none;}
-  .pv-board{gap:8px;}
-  .pv-cell{min-width:54px;padding:8px 12px;}
-  .pv-label{font-size:.66rem;max-width:70px;}
-  .pv-arrow{font-size:2rem;padding-bottom:30px;}
+  .pv-board{--pv-gap:8px;--pv-colpad:4px;}
+  .pv-board.compact{--pv-gap:6px;--pv-colpad:3px;}
+  .pv-label,.pv-board.compact .pv-label{font-size:.6rem;letter-spacing:.2px;}
+  .pv-cap{font-size:.58rem;letter-spacing:.2px;}
+  .pv-cell{padding:8px 0;}
+  .teach-panel{padding:16px 14px 18px;}
   .decide-groups,.decide-buttons{grid-template-columns:1fr;}
   .activity-foot{flex-wrap:wrap;}
   .activity-foot .ghost-speak{order:3;margin:0;width:100%;}
   .answer-tile.try-again::after{display:block;font-size:.4em;}
+  .build-badge{position:static;display:block;width:max-content;max-width:100%;margin:8px auto 10px;box-shadow:none;}
   .entry{max-width:100%;}
   .key{min-height:54px;font-size:1.5rem;}
   .keypad{gap:8px;}
@@ -476,7 +493,13 @@ button.pv-cell:disabled{cursor:default;}
 @media (max-width:400px){
   .answer-row{flex-direction:column;}
   .answer-tile{max-width:100%;width:100%;}
-  .pv-cell{font-size:2rem;min-width:46px;padding:6px 8px;}
+  .pv-board{--pv-gap:5px;--pv-colpad:2px;}
+  .pv-board.compact{--pv-gap:4px;--pv-colpad:2px;}
+  .pv-label,.pv-board.compact .pv-label{font-size:.52rem;letter-spacing:0;}
+  .pv-cap{font-size:.5rem;letter-spacing:0;}
+  .pv-cell{padding:6px 0;}
+  .teach-panel{padding:14px 10px 16px;}
+  .stage,.learn-stage{padding:16px 10px 18px;}
   .key{min-height:48px;}
   .entry-input{font-size:1.8rem;}
 }
