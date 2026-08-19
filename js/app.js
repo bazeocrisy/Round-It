@@ -545,7 +545,7 @@
     const chosen=Number(btn.dataset.value),p=state.problem;
     if(chosen===p.answer){
       state.answered=true;
-      state.results.push(state.firstTry?"correct":"missed"); if(state.firstTry)state.correct++; else state.missed++;
+      if(!state.reviewMode){ state.results.push(state.firstTry?"correct":"missed"); if(state.firstTry)state.correct++; else state.missed++; }
       btn.className="answer-tile correct";
       [el("answer-a"),el("answer-b")].forEach(b=>{b.disabled=true; if(b!==btn)b.classList.add("dimmed");});
       el("feedback").textContent=PRAISE[randInt(0,PRAISE.length-1)]+" "+fmt(p.number)+" rounds to "+fmt(p.answer)+".";
@@ -574,7 +574,7 @@
     el("next-btn").disabled=true; stopSpeech();
     if(state.reviewMode){
       state.reviewIndex++;
-      if(state.reviewIndex>=state.reviewTotal){ finishSession("review"); state.reviewMode=false; return; }
+      if(state.reviewIndex>=state.reviewTotal){ state.reviewMode=false; finishSession("practice"); return; }
       state.answered=false; state.firstTry=true; state.hintStep=0;
       state.problem=state.reviewQueue[state.reviewIndex];
       renderPractice(); return;
@@ -712,14 +712,14 @@
      RESULTS
      ==================================================== */
   function finishSession(mode){
-    const total = mode==="test" ? state.testLength : mode==="review" ? state.reviewTotal : PRACTICE_LEN;
+    const total = mode==="test" ? state.testLength : PRACTICE_LEN;
     const pct=Math.round((state.correct/total)*100);
-    el("results-skill").textContent=LEVELS[state.levelKey].displayName+" \u00b7 "+sizeChipText()+" \u00b7 "+(mode==="test"?"Test":mode==="review"?"Review":"Practice");
+    el("results-skill").textContent=LEVELS[state.levelKey].displayName+" \u00b7 "+sizeChipText()+" \u00b7 "+(mode==="test"?"Test":"Practice");
     el("stat-correct").textContent=state.correct;
     el("stat-missed").textContent=total-state.correct;
     el("stat-percent").textContent=pct+"%";
     el("results-ring").style.setProperty("--pct",pct);
-    el("results-heading").textContent=mode==="test"?"Test complete!":mode==="review"?"Review complete!":"Session complete!";
+    el("results-heading").textContent=mode==="test"?"Test complete!":"Session complete!";
     let msg,emoji;
     if(pct===100){msg="Perfect score \u2014 you're a rounding champion!";emoji="\uD83C\uDFC6";}
     else if(pct>=80){msg="Fantastic work! You really know your benchmarks.";emoji="\uD83C\uDF89";}
